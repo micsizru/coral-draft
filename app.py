@@ -2,7 +2,7 @@ import json
 import os
 from pathlib import Path
 import uuid
-from flask import Flask, jsonify, render_template, request
+from flask import Flask, jsonify, request, send_from_directory
 
 app = Flask(__name__)
 
@@ -14,7 +14,8 @@ os.makedirs(STORAGE_DIR, exist_ok=True)
 
 @app.route("/")
 def index():
-    return render_template("index.html")
+    return send_from_directory(BASE_DIR / "templates", "index.html")
+
 
 
 # 1. Tüm belgeleri listele (Sol menü için)
