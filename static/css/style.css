@@ -1,0 +1,213 @@
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+body {
+  font-family:
+    "Inter",
+    system-ui,
+    -apple-system,
+    sans-serif;
+  background: #f8fafc;
+  color: #0f172a;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  margin: 0;
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #6366f1, #8b5cf6, #ec4899);
+  z-index: 9999;
+}
+
+.editor-line-h1 {
+  font-size: 1.75rem;
+  font-weight: 700;
+  line-height: 1.35;
+  color: #0f172a;
+  line-height: 1.25;
+  letter-spacing: -0.02em;
+  padding-top: 0.08em;
+  padding-bottom: 0.08em;
+}
+
+.editor-line-h2 {
+  font-size: 1.55rem;
+  font-weight: 700;
+  color: #1e293b;
+  line-height: 1.3;
+  letter-spacing: -0.01em;
+}
+
+.editor-line-h3 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #334155;
+  line-height: 1.35;
+}
+
+.editor-line-h4 {
+  font-size: 1.12rem;
+  font-weight: 600;
+  color: #475569;
+  line-height: 1.4;
+}
+
+.editor-line-p {
+  font-size: 1.05rem;
+  color: #374151;
+  line-height: 1.8;
+}
+
+.editor-line-image_link {
+  color: #2563eb;
+  text-decoration: underline;
+  text-decoration-color: #93c5fd;
+  text-underline-offset: 4px;
+  text-decoration-thickness: 1.5px;
+  padding: 0.4rem 0.8rem;
+  background: #eff6ff;
+  border-radius: 0.5rem;
+  font-family: "SF Mono", "Cascadia Code", "Consolas", monospace;
+  font-size: 0.92rem;
+  word-break: break-all;
+}
+
+.editor-line-devnote {
+  background: #fef9c3;
+  border-left: 4px solid #f59e0b;
+  padding: 0.6rem 0.9rem;
+  border-radius: 0 0.5rem 0.5rem 0;
+  color: #92400e;
+  font-style: italic;
+}
+
+/* Leftward sliding dropdown menu animation */
+.dropdown-menu-left-enter-active,
+.dropdown-menu-left-leave-active {
+  transition:
+    transform 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+    opacity 0.15s ease;
+  transform-origin: right center;
+}
+.dropdown-menu-left-enter-from,
+.dropdown-menu-left-leave-to {
+  opacity: 0;
+  transform: scale(0.92) translateX(10px);
+}
+
+/* Toast notification */
+.toast-notification {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 9000;
+  padding: 12px 20px;
+  background: #1e293b;
+  color: #f1f5f9;
+  font-size: 0.85rem;
+  font-weight: 500;
+  border-radius: 10px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.22);
+  transition:
+    opacity 0.3s,
+    transform 0.3s;
+}
+.toast-notification.hidden {
+  opacity: 0;
+  transform: translateY(12px);
+  pointer-events: none;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+.input-field {
+  width: 100%;
+  padding: 0.55rem 0.85rem;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 0.5rem;
+  outline: none;
+  font-family: inherit;
+  font-size: 0.9rem;
+  color: #1e293b;
+  background: #fff;
+  transition:
+    border-color 0.15s,
+    box-shadow 0.15s;
+}
+.input-field:focus {
+  border-color: #818cf8;
+  box-shadow: 0 0 0 3px rgba(129, 140, 248, 0.15);
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 0.5rem;
+  font-family: inherit;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    background 0.15s,
+    transform 0.1s,
+    box-shadow 0.15s;
+}
+.btn:active {
+  transform: scale(0.97);
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(99, 102, 241, 0.25);
+}
+.btn-primary:hover {
+  background: linear-gradient(135deg, #4f46e5, #7c3aed);
+  box-shadow: 0 4px 14px rgba(99, 102, 241, 0.35);
+}
+
+.btn-dark {
+  background: #1e293b;
+  color: #f1f5f9;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+}
+.btn-dark:hover {
+  background: #0f172a;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.18);
+}
+
+.btn-outline {
+  background: #fff;
+  color: #475569;
+  border: 1.5px solid #e2e8f0;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+.btn-outline:hover {
+  background: #f8fafc;
+  border-color: #cbd5e1;
+  color: #1e293b;
+}

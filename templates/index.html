@@ -40,221 +40,8 @@
     <!-- FileSaver.js -->
     <script src="https://unpkg.com/file-saver@2.0.5/dist/FileSaver.min.js"></script>
 
-    <style>
-      *,
-      *::before,
-      *::after {
-        box-sizing: border-box;
-      }
-      body {
-        font-family:
-          "Inter",
-          system-ui,
-          -apple-system,
-          sans-serif;
-        background: #f8fafc;
-        color: #0f172a;
-        -webkit-font-smoothing: antialiased;
-        -moz-osx-font-smoothing: grayscale;
-        margin: 0;
-      }
-
-      body::before {
-        content: "";
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        height: 3px;
-        background: linear-gradient(90deg, #6366f1, #8b5cf6, #ec4899);
-        z-index: 9999;
-      }
-
-      .editor-line-h1 {
-        font-size: 1.75rem;
-        font-weight: 700;
-        line-height: 1.35;
-        color: #0f172a;
-        line-height: 1.25;
-        letter-spacing: -0.02em;
-        padding-top: 0.08em;
-        padding-bottom: 0.08em;
-      }
-
-      .editor-line-h2 {
-        font-size: 1.55rem;
-        font-weight: 700;
-        color: #1e293b;
-        line-height: 1.3;
-        letter-spacing: -0.01em;
-      }
-
-      .editor-line-h3 {
-        font-size: 1.25rem;
-        font-weight: 600;
-        color: #334155;
-        line-height: 1.35;
-      }
-
-      .editor-line-h4 {
-        font-size: 1.12rem;
-        font-weight: 600;
-        color: #475569;
-        line-height: 1.4;
-      }
-
-      .editor-line-p {
-        font-size: 1.05rem;
-        color: #374151;
-        line-height: 1.8;
-      }
-
-      .editor-line-image_link {
-        color: #2563eb;
-        text-decoration: underline;
-        text-decoration-color: #93c5fd;
-        text-underline-offset: 4px;
-        text-decoration-thickness: 1.5px;
-        padding: 0.4rem 0.8rem;
-        background: #eff6ff;
-        border-radius: 0.5rem;
-        font-family: "SF Mono", "Cascadia Code", "Consolas", monospace;
-        font-size: 0.92rem;
-        word-break: break-all;
-      }
-
-      .editor-line-devnote {
-        background: #fef9c3;
-        border-left: 4px solid #f59e0b;
-        padding: 0.6rem 0.9rem;
-        border-radius: 0 0.5rem 0.5rem 0;
-        color: #92400e;
-        font-style: italic;
-      }
-
-      /* Leftward sliding dropdown menu animation */
-      .dropdown-menu-left-enter-active,
-      .dropdown-menu-left-leave-active {
-        transition:
-          transform 0.2s cubic-bezier(0.16, 1, 0.3, 1),
-          opacity 0.15s ease;
-        transform-origin: right center;
-      }
-      .dropdown-menu-left-enter-from,
-      .dropdown-menu-left-leave-to {
-        opacity: 0;
-        transform: scale(0.92) translateX(10px);
-      }
-
-      /* Toast notification */
-      .toast-notification {
-        position: fixed;
-        bottom: 24px;
-        right: 24px;
-        z-index: 9000;
-        padding: 12px 20px;
-        background: #1e293b;
-        color: #f1f5f9;
-        font-size: 0.85rem;
-        font-weight: 500;
-        border-radius: 10px;
-        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.22);
-        transition:
-          opacity 0.3s,
-          transform 0.3s;
-      }
-      .toast-notification.hidden {
-        opacity: 0;
-        transform: translateY(12px);
-        pointer-events: none;
-      }
-
-      /* Custom Scrollbar */
-      ::-webkit-scrollbar {
-        width: 6px;
-      }
-      ::-webkit-scrollbar-track {
-        background: transparent;
-      }
-      ::-webkit-scrollbar-thumb {
-        background: #cbd5e1;
-        border-radius: 3px;
-      }
-      ::-webkit-scrollbar-thumb:hover {
-        background: #94a3b8;
-      }
-
-      .input-field {
-        width: 100%;
-        padding: 0.55rem 0.85rem;
-        border: 1.5px solid #e2e8f0;
-        border-radius: 0.5rem;
-        outline: none;
-        font-family: inherit;
-        font-size: 0.9rem;
-        color: #1e293b;
-        background: #fff;
-        transition:
-          border-color 0.15s,
-          box-shadow 0.15s;
-      }
-      .input-field:focus {
-        border-color: #818cf8;
-        box-shadow: 0 0 0 3px rgba(129, 140, 248, 0.15);
-      }
-
-      .btn {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        padding: 0.5rem 1rem;
-        border: none;
-        border-radius: 0.5rem;
-        font-family: inherit;
-        font-size: 0.82rem;
-        font-weight: 600;
-        cursor: pointer;
-        transition:
-          background 0.15s,
-          transform 0.1s,
-          box-shadow 0.15s;
-      }
-      .btn:active {
-        transform: scale(0.97);
-      }
-
-      .btn-primary {
-        background: linear-gradient(135deg, #6366f1, #8b5cf6);
-        color: #fff;
-        box-shadow: 0 2px 8px rgba(99, 102, 241, 0.25);
-      }
-      .btn-primary:hover {
-        background: linear-gradient(135deg, #4f46e5, #7c3aed);
-        box-shadow: 0 4px 14px rgba(99, 102, 241, 0.35);
-      }
-
-      .btn-dark {
-        background: #1e293b;
-        color: #f1f5f9;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
-      }
-      .btn-dark:hover {
-        background: #0f172a;
-        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.18);
-      }
-
-      .btn-outline {
-        background: #fff;
-        color: #475569;
-        border: 1.5px solid #e2e8f0;
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
-      }
-      .btn-outline:hover {
-        background: #f8fafc;
-        border-color: #cbd5e1;
-        color: #1e293b;
-      }
-    </style>
+    <!-- Custom Stylesheet -->
+    <link rel="stylesheet" href="/static/css/style.css" />
   </head>
   <body>
     <div id="app" class="min-h-screen flex flex-col">
@@ -313,32 +100,11 @@
           </div>
 
           <div class="flex items-center gap-2">
-            <!-- KAYITLI TASLAKLAR DROPDOWN MENÜSÜ -->
-            <select
-              v-if="docList.length > 0"
-              @change="loadDoc($event.target.value)"
-              :value="currentDocId || ''"
-              class="input-field text-xs font-semibold !py-2 !px-3 bg-slate-50 border-slate-300 text-slate-700 cursor-pointer max-w-[180px] truncate"
-            >
-              <option value="" disabled selected>📂 Taslak Seç...</option>
-              <option v-for="doc in docList" :key="doc.id" :value="doc.id">
-                {{ doc.title }}
-              </option>
-            </select>
-
-            <!-- YENİ TASLAK AÇ BUTONU -->
             <button
               class="btn btn-outline border-indigo-200 text-indigo-600 hover:bg-indigo-50"
               @click="createNewDoc"
             >
-              + Yeni
-            </button>
-
-            <button
-              class="btn btn-outline text-red-600 hover:text-red-700 border-red-200 hover:border-red-300"
-              @click="clearAll"
-            >
-              Temizle
+              + Yeni Taslak
             </button>
             <button class="btn btn-primary" @click="downloadDOCX">
               DOCX İndir
@@ -351,234 +117,282 @@
       </header>
 
       <!-- ═══════════ MAIN CONTENT ═══════════ -->
-      <main
-        class="max-w-5xl w-full mx-auto px-6 pt-8 pb-20 flex-1 flex flex-col gap-8"
-      >
-        <!-- ── SEO FORM ── -->
-        <section
-          class="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-6 w-full max-w-[720px] mx-auto"
+      <!-- ═══════════ MAIN & SIDEBAR CONTAINER ═══════════ -->
+      <div class="flex-1 flex max-w-7xl w-full mx-auto px-4 items-start gap-6">
+        <!-- ── SOL TASLAK PANELİ (SIDEBAR) ── -->
+        <aside
+          v-if="sidebarOpen"
+          class="w-64 bg-white border border-slate-200/80 p-4 my-8 rounded-2xl shadow-sm flex flex-col gap-3 shrink-0 sticky top-20 max-h-[calc(100vh-120px)] transition-all"
         >
-          <div class="flex items-center gap-2 mb-4">
+          <div
+            class="flex items-center justify-between border-b border-slate-100 pb-3"
+          >
             <h2
               class="text-xs font-bold text-slate-400 uppercase tracking-wider"
             >
-              SEO Bilgileri
+              Taslaklarım
             </h2>
-          </div>
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label
-                class="block text-xs font-bold text-slate-500 uppercase mb-1"
-                >Sayfa Ana Başlığı (H1)</label
-              >
-              <input
-                v-model="seo.h1"
-                type="text"
-                class="input-field"
-                placeholder="Ana başlığı girin..."
-              />
-            </div>
-            <div>
-              <label
-                class="block text-xs font-bold text-slate-500 uppercase mb-1"
-                >Meta Title</label
-              >
-              <input
-                v-model="seo.metaTitle"
-                type="text"
-                class="input-field"
-                placeholder="Meta title..."
-              />
-            </div>
-            <div>
-              <label
-                class="block text-xs font-bold text-slate-500 uppercase mb-1"
-                >URL</label
-              >
-              <input
-                v-model="seo.url"
-                type="text"
-                class="input-field"
-                placeholder="https://..."
-              />
-            </div>
-            <div>
-              <label
-                class="block text-xs font-bold text-slate-500 uppercase mb-1"
-                >Meta Description</label
-              >
-              <input
-                v-model="seo.metaDescription"
-                type="text"
-                class="input-field"
-                placeholder="Meta description..."
-              />
-            </div>
-          </div>
-        </section>
-
-        <!-- ── DOCUMENT BLOCKS CANVAS ── -->
-        <div class="w-full flex flex-col items-center gap-10">
-          <!-- BLOCKS LOOP -->
-          <div
-            v-for="(block, bIndex) in blocks"
-            :key="block.id"
-            class="w-full max-w-[720px] bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-visible relative p-8 sm:p-10"
-          >
-            <!-- BLOCK HEADER BAR (Clean inline title) -->
-            <div
-              class="flex items-center justify-between pb-6 mb-6 border-b border-slate-100"
+            <span class="text-xs text-slate-400 font-medium"
+              >{{ docList.length }} Belge</span
             >
-              <div class="flex items-center gap-2">
+          </div>
+
+          <div class="flex-1 overflow-y-auto space-y-1.5 pr-1">
+            <div
+              v-for="doc in docList"
+              :key="doc.id"
+              @click="loadDoc(doc.id)"
+              :class="['p-2.5 rounded-xl text-sm cursor-pointer transition flex items-center justify-between group border', 
+                       currentDocId === doc.id ? 'bg-indigo-50/80 text-indigo-700 font-semibold border-indigo-200' : 'text-slate-600 hover:bg-slate-50 border-transparent hover:border-slate-200']"
+            >
+              <span class="truncate pr-2 text-xs"
+                >📄 {{ doc.title || 'İsimsiz Taslak' }}</span
+              >
+              <button
+                @click.stop="deleteDoc(doc.id)"
+                class="opacity-0 group-hover:opacity-100 text-slate-400 hover:text-red-500 font-bold px-1 transition"
+                title="Taslağı Sil"
+              >
+                ×
+              </button>
+            </div>
+
+            <div
+              v-if="docList.length === 0"
+              class="text-xs text-slate-400 italic text-center py-6"
+            >
+              Henüz kayıtlı taslak yok.
+            </div>
+          </div>
+        </aside>
+        <main
+          class="max-w-5xl w-full mx-auto px-6 pt-8 pb-20 flex-1 flex flex-col gap-8"
+        >
+          <!-- ── SEO FORM ── -->
+          <section
+            class="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-6 w-full max-w-[720px] mx-auto"
+          >
+            <div class="flex items-center gap-2 mb-4">
+              <h2
+                class="text-xs font-bold text-slate-400 uppercase tracking-wider"
+              >
+                SEO Bilgileri
+              </h2>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label
+                  class="block text-xs font-bold text-slate-500 uppercase mb-1"
+                  >Sayfa Ana Başlığı (H1)</label
+                >
                 <input
-                  v-model="block.name"
+                  v-model="seo.h1"
                   type="text"
-                  class="bg-transparent text-sm font-bold text-slate-400 uppercase tracking-widest border-b border-transparent hover:border-slate-300 focus:border-indigo-500 outline-none px-1 py-0.5 transition-all"
-                  placeholder="BLOK İSMİ"
+                  class="input-field"
+                  placeholder="Ana başlığı girin..."
                 />
               </div>
-
-              <button
-                v-if="blocks.length > 1"
-                @click="deleteBlock(bIndex)"
-                class="text-xs text-red-400 hover:text-red-600 font-medium flex items-center gap-1 hover:underline"
-              >
-                Bloğu Sil
-              </button>
-            </div>
-
-            <!-- LINES LIST (Word-like continuous writing canvas) -->
-            <div class="space-y-4">
-              <div
-                v-for="(line, lIndex) in block.lines"
-                :key="line.id"
-                class="relative flex items-start group"
-              >
-                <!-- LEFT BUTTON OUTSIDE THE TEXT CANVAS MARGIN -->
-                <div
-                  class="absolute right-full mr-4 top-1 flex items-center z-30"
+              <div>
+                <label
+                  class="block text-xs font-bold text-slate-500 uppercase mb-1"
+                  >Meta Title</label
                 >
-                  <!-- DROPDOWN POPOVER (SLIDES LEFT) -->
-                  <transition name="dropdown-menu-left">
-                    <div
-                      v-if="activeDropdown === `${bIndex}_${lIndex}`"
-                      class="absolute right-full mr-2 top-1/2 -translate-y-1/2 bg-white rounded-xl shadow-xl border border-slate-200/90 p-1.5 flex items-center gap-1 z-40 whitespace-nowrap"
-                    >
-                      <button
-                        v-for="type in types"
-                        :key="type.value"
-                        @click="setLineType(bIndex, lIndex, type.value)"
-                        :class="['text-xs font-bold px-2.5 py-1 rounded transition-all duration-150', 
-                                                 line.type === type.value ? type.activeClass : 'text-slate-500 hover:text-slate-800 hover:bg-slate-100']"
-                      >
-                        {{ type.abbr }}
-                      </button>
-                    </div>
-                  </transition>
+                <input
+                  v-model="seo.metaTitle"
+                  type="text"
+                  class="input-field"
+                  placeholder="Meta title..."
+                />
+              </div>
+              <div>
+                <label
+                  class="block text-xs font-bold text-slate-500 uppercase mb-1"
+                  >URL</label
+                >
+                <input
+                  v-model="seo.url"
+                  type="text"
+                  class="input-field"
+                  placeholder="https://..."
+                />
+              </div>
+              <div>
+                <label
+                  class="block text-xs font-bold text-slate-500 uppercase mb-1"
+                  >Meta Description</label
+                >
+                <input
+                  v-model="seo.metaDescription"
+                  type="text"
+                  class="input-field"
+                  placeholder="Meta description..."
+                />
+              </div>
+            </div>
+          </section>
 
-                  <!-- ROUND TYPE SELECTOR BUTTON -->
-                  <button
-                    @click.stop="toggleDropdown(bIndex, lIndex)"
-                    :class="['w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold border transition-all duration-200 shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-indigo-500 cursor-pointer select-none', 
-                                         getDropdownBtnClass(line.type)]"
-                    :title="'Etiket: ' + (types.find(t => t.value === line.type)?.label)"
-                  >
-                    {{ types.find(t => t.value === line.type)?.abbr }}
-                  </button>
+          <!-- ── DOCUMENT BLOCKS CANVAS ── -->
+          <div class="w-full flex flex-col items-center gap-10">
+            <!-- BLOCKS LOOP -->
+            <div
+              v-for="(block, bIndex) in blocks"
+              :key="block.id"
+              class="w-full max-w-[720px] bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-visible relative p-8 sm:p-10"
+            >
+              <!-- BLOCK HEADER BAR (Clean inline title) -->
+              <div
+                class="flex items-center justify-between pb-6 mb-6 border-b border-slate-100"
+              >
+                <div class="flex items-center gap-2">
+                  <input
+                    v-model="block.name"
+                    type="text"
+                    class="bg-transparent text-sm font-bold text-slate-400 uppercase tracking-widest border-b border-transparent hover:border-slate-300 focus:border-indigo-500 outline-none px-1 py-0.5 transition-all"
+                    placeholder="BLOK İSMİ"
+                  />
                 </div>
 
-                <!-- CONTINUOUS TEXTAREA (NO INNER BORDERS / NO INPUT BOX LOOK) -->
-                <div class="flex-1 min-w-0">
-                  <textarea
-                    v-model="line.content"
-                    @keydown.enter.prevent="handleEnter(bIndex, lIndex, $event)"
-                    @keydown.backspace="handleBackspace(bIndex, lIndex, $event)"
-                    @keydown.up="focusPrev(bIndex, lIndex)"
-                    @keydown.down="focusNext(bIndex, lIndex)"
-                    :ref="el => { if (el) setLineRef(bIndex, lIndex, el) }"
-                    rows="1"
-                    class="w-full bg-transparent border-0 outline-none resize-none focus:ring-0 px-0 py-1 m-0 placeholder:text-slate-300 placeholder:italic transition-all duration-200 block"
-                    :class="getLineClass(line.type)"
-                    placeholder="Yazmaya başlayın..."
-                    @input="adjustHeight($event.target)"
-                  ></textarea>
+                <button
+                  v-if="blocks.length > 1"
+                  @click="deleteBlock(bIndex)"
+                  class="text-xs text-red-400 hover:text-red-600 font-medium flex items-center gap-1 hover:underline"
+                >
+                  Bloğu Sil
+                </button>
+              </div>
 
-                  <!-- LINK TESTER -->
+              <!-- LINES LIST (Word-like continuous writing canvas) -->
+              <div class="space-y-4">
+                <div
+                  v-for="(line, lIndex) in block.lines"
+                  :key="line.id"
+                  class="relative flex items-start group"
+                >
+                  <!-- LEFT BUTTON OUTSIDE THE TEXT CANVAS MARGIN -->
                   <div
-                    v-if="line.type === 'image_link' && line.content.trim()"
-                    class="mt-1 flex justify-start"
+                    class="absolute right-full mr-4 top-1 flex items-center z-30"
                   >
-                    <a
-                      :href="line.content.trim()"
-                      target="_blank"
-                      class="text-xs text-blue-600 hover:underline inline-flex items-center gap-1 font-medium"
+                    <!-- DROPDOWN POPOVER (SLIDES LEFT) -->
+                    <transition name="dropdown-menu-left">
+                      <div
+                        v-if="activeDropdown === `${bIndex}_${lIndex}`"
+                        class="absolute right-full mr-2 top-1/2 -translate-y-1/2 bg-white rounded-xl shadow-xl border border-slate-200/90 p-1.5 flex items-center gap-1 z-40 whitespace-nowrap"
+                      >
+                        <button
+                          v-for="type in types"
+                          :key="type.value"
+                          @click="setLineType(bIndex, lIndex, type.value)"
+                          :class="['text-xs font-bold px-2.5 py-1 rounded transition-all duration-150', 
+                                                 line.type === type.value ? type.activeClass : 'text-slate-500 hover:text-slate-800 hover:bg-slate-100']"
+                        >
+                          {{ type.abbr }}
+                        </button>
+                      </div>
+                    </transition>
+
+                    <!-- ROUND TYPE SELECTOR BUTTON -->
+                    <button
+                      @click.stop="toggleDropdown(bIndex, lIndex)"
+                      :class="['w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold border transition-all duration-200 shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-indigo-500 cursor-pointer select-none', 
+                                         getDropdownBtnClass(line.type)]"
+                      :title="'Etiket: ' + (types.find(t => t.value === line.type)?.label)"
                     >
-                      Linki Test Et ↗
-                    </a>
+                      {{ types.find(t => t.value === line.type)?.abbr }}
+                    </button>
+                  </div>
+
+                  <!-- CONTINUOUS TEXTAREA (NO INNER BORDERS / NO INPUT BOX LOOK) -->
+                  <div class="flex-1 min-w-0">
+                    <textarea
+                      v-model="line.content"
+                      @keydown.enter.prevent="handleEnter(bIndex, lIndex, $event)"
+                      @keydown.backspace="handleBackspace(bIndex, lIndex, $event)"
+                      @keydown.up="focusPrev(bIndex, lIndex)"
+                      @keydown.down="focusNext(bIndex, lIndex)"
+                      :ref="el => { if (el) setLineRef(bIndex, lIndex, el) }"
+                      rows="1"
+                      class="w-full bg-transparent border-0 outline-none resize-none focus:ring-0 px-0 py-1 m-0 placeholder:text-slate-300 placeholder:italic transition-all duration-200 block"
+                      :class="getLineClass(line.type)"
+                      placeholder="Yazmaya başlayın..."
+                      @input="adjustHeight($event.target)"
+                    ></textarea>
+
+                    <!-- LINK TESTER -->
+                    <div
+                      v-if="line.type === 'image_link' && line.content.trim()"
+                      class="mt-1 flex justify-start"
+                    >
+                      <a
+                        :href="line.content.trim()"
+                        target="_blank"
+                        class="text-xs text-blue-600 hover:underline inline-flex items-center gap-1 font-medium"
+                      >
+                        Linki Test Et ↗
+                      </a>
+                    </div>
+                  </div>
+
+                  <!-- RIGHT DELETE BUTTON OUTSIDE THE TEXT CANVAS MARGIN -->
+                  <div class="absolute left-full ml-4 top-1 flex items-center">
+                    <button
+                      @click="deleteLine(bIndex, lIndex)"
+                      class="opacity-0 group-hover:opacity-100 w-7 h-7 rounded-full text-slate-300 hover:text-red-500 hover:bg-red-50 flex items-center justify-center transition-all duration-150"
+                      title="Satırı sil"
+                    >
+                      <svg
+                        width="14"
+                        height="14"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        viewBox="0 0 24 24"
+                      >
+                        <polyline points="3 6 5 6 21 6" />
+                        <path
+                          d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"
+                        />
+                      </svg>
+                    </button>
                   </div>
                 </div>
+              </div>
 
-                <!-- RIGHT DELETE BUTTON OUTSIDE THE TEXT CANVAS MARGIN -->
-                <div class="absolute left-full ml-4 top-1 flex items-center">
-                  <button
-                    @click="deleteLine(bIndex, lIndex)"
-                    class="opacity-0 group-hover:opacity-100 w-7 h-7 rounded-full text-slate-300 hover:text-red-500 hover:bg-red-50 flex items-center justify-center transition-all duration-150"
-                    title="Satırı sil"
-                  >
-                    <svg
-                      width="14"
-                      height="14"
-                      fill="none"
-                      stroke="currentColor"
-                      stroke-width="2"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      viewBox="0 0 24 24"
-                    >
-                      <polyline points="3 6 5 6 21 6" />
-                      <path
-                        d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"
-                      />
-                    </svg>
-                  </button>
-                </div>
+              <!-- ADD LINE (+) AT BOTTOM OF BLOCK -->
+              <div class="flex justify-center pt-6">
+                <button
+                  @click="addNewLine(bIndex, block.lines.length)"
+                  class="w-7 h-7 rounded-full bg-slate-100 hover:bg-indigo-50 text-slate-400 hover:text-indigo-600 border border-slate-200 flex items-center justify-center text-sm font-bold transition-all shadow-sm active:scale-95"
+                  title="Bu bloğa yeni satır ekle"
+                >
+                  +
+                </button>
               </div>
             </div>
 
-            <!-- ADD LINE (+) AT BOTTOM OF BLOCK -->
-            <div class="flex justify-center pt-6">
-              <button
-                @click="addNewLine(bIndex, block.lines.length)"
-                class="w-7 h-7 rounded-full bg-slate-100 hover:bg-indigo-50 text-slate-400 hover:text-indigo-600 border border-slate-200 flex items-center justify-center text-sm font-bold transition-all shadow-sm active:scale-95"
-                title="Bu bloğa yeni satır ekle"
-              >
-                +
-              </button>
-            </div>
-          </div>
-
-          <!-- "YENİ BLOK EKLE" BUTTON -->
-          <button
-            class="btn btn-outline border-indigo-200 text-indigo-600 hover:bg-indigo-50 shadow-sm py-2.5 px-6"
-            @click="addNewBlock"
-          >
-            <svg
-              width="16"
-              height="16"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2.5"
-              stroke-linecap="round"
-              viewBox="0 0 24 24"
+            <!-- "YENİ BLOK EKLE" BUTTON -->
+            <button
+              class="btn btn-outline border-indigo-200 text-indigo-600 hover:bg-indigo-50 shadow-sm py-2.5 px-6"
+              @click="addNewBlock"
             >
-              <line x1="12" y1="5" x2="12" y2="19" />
-              <line x1="5" y1="12" x2="19" y2="12" />
-            </svg>
-            Yeni Blok Ekle
-          </button>
-        </div>
-      </main>
-
+              <svg
+                width="16"
+                height="16"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2.5"
+                stroke-linecap="round"
+                viewBox="0 0 24 24"
+              >
+                <line x1="12" y1="5" x2="12" y2="19" />
+                <line x1="5" y1="12" x2="19" y2="12" />
+              </svg>
+              Yeni Blok Ekle
+            </button>
+          </div>
+        </main>
+      </div>
       <!-- ═══════════ TOAST ═══════════ -->
       <div :class="['toast-notification', { hidden: !toastVisible }]">
         {{ toastMessage }}
@@ -588,765 +402,7 @@
     <!-- ═══════════════════════════════════════════════════════════
      VUE 3 APPLICATION
      ═══════════════════════════════════════════════════════════ -->
-    <script>
-      const { createApp, ref, reactive, nextTick, onMounted } = Vue;
-
-      createApp({
-        setup() {
-          // --- BULUT KAYIT DEĞİŞKENLERİ VE FONKSİYONLARI ---
-          const currentDocId = ref(null);
-          const saving = ref(false);
-          const docList = ref([]);
-          let autoSaveTimer = null;
-
-          // Arka planda sessiz otokayıt (Yazı bittikten 1.2 sn sonra atar)
-          function triggerAutoSave() {
-            saving.value = true;
-            clearTimeout(autoSaveTimer);
-            autoSaveTimer = setTimeout(async () => {
-              const payload = generateJSONData();
-              payload.id = currentDocId.value;
-              try {
-                const res = await fetch("/api/save", {
-                  method: "POST",
-                  headers: { "Content-Type": "application/json" },
-                  body: JSON.stringify(payload),
-                });
-                const data = await res.json();
-                if (data.id) currentDocId.value = data.id;
-                await fetchDocList();
-              } catch (e) {
-                console.error("Kayıt hatası:", e);
-              } finally {
-                saving.value = false;
-              }
-            }, 1200);
-          }
-
-          // Kayıtlı belgeleri getir
-          async function fetchDocList() {
-            try {
-              const res = await fetch("/api/docs");
-              docList.value = await res.json();
-            } catch (e) {
-              console.error(e);
-            }
-          }
-
-          // Seçilen belgeyi yükle
-          async function loadDoc(id) {
-            try {
-              const res = await fetch(`/api/doc/${id}`);
-              const data = await res.json();
-              currentDocId.value = data.id;
-              seo.h1 = data.seo?.h1 || "";
-              seo.metaTitle = data.seo?.metaTitle || "";
-              seo.metaDescription = data.seo?.metaDescription || "";
-              seo.url = data.seo?.url || "";
-
-              if (data.blocks && data.blocks.length > 0) {
-                blocks.value = data.blocks.map((b) => ({
-                  id: getUniqueId(),
-                  name: b.name,
-                  lines: b.items.map((i) => ({
-                    id: getUniqueId(),
-                    type: i.type,
-                    content: i.content,
-                  })),
-                }));
-              }
-              showToast("✓ Belge yüklendi");
-              triggerAllHeights();
-            } catch (e) {
-              showToast("⚠ Belge yüklenemedi");
-            }
-          }
-
-          // Yeni bomboş belge aç
-          function createNewDoc() {
-            currentDocId.value = null;
-            seo.h1 = "";
-            seo.metaTitle = "";
-            seo.metaDescription = "";
-            seo.url = "";
-            blocks.value = [
-              {
-                id: getUniqueId(),
-                name: "Blok 1",
-                lines: [{ id: getUniqueId(), type: "p", content: "" }],
-              },
-            ];
-            showToast("Yeni Taslak");
-          }
-
-          // Belge sil
-          async function deleteDoc(id) {
-            if (!confirm("Bu taslağı silmek istediğinize emin misiniz?"))
-              return;
-            await fetch(`/api/doc/${id}`, { method: "DELETE" });
-            if (currentDocId.value === id) createNewDoc();
-            fetchDocList();
-          }
-
-          const seo = reactive({
-            h1: "",
-            metaTitle: "",
-            metaDescription: "",
-            url: "",
-          });
-
-          const types = [
-            {
-              value: "p",
-              abbr: "P",
-              label: "Paragraf",
-              activeClass: "bg-slate-800 text-white",
-              btnClass:
-                "bg-slate-100 text-slate-700 border-slate-300 hover:bg-slate-200",
-            },
-            {
-              value: "h1",
-              abbr: "H1",
-              label: "Başlık 1",
-              activeClass: "bg-indigo-700 text-white",
-              btnClass:
-                "bg-indigo-50 text-indigo-700 border-indigo-200 hover:bg-indigo-100",
-            },
-            {
-              value: "h2",
-              abbr: "H2",
-              label: "Başlık 2",
-              activeClass: "bg-indigo-600 text-white",
-              btnClass:
-                "bg-indigo-50 text-indigo-700 border-indigo-200 hover:bg-indigo-100",
-            },
-            {
-              value: "h3",
-              abbr: "H3",
-              label: "Başlık 3",
-              activeClass: "bg-indigo-600 text-white",
-              btnClass:
-                "bg-indigo-50 text-indigo-700 border-indigo-200 hover:bg-indigo-100",
-            },
-            {
-              value: "h4",
-              abbr: "H4",
-              label: "Başlık 4",
-              activeClass: "bg-indigo-600 text-white",
-              btnClass:
-                "bg-indigo-50 text-indigo-700 border-indigo-200 hover:bg-indigo-100",
-            },
-            {
-              value: "image_link",
-              abbr: "IMG",
-              label: "Görsel Linki",
-              activeClass: "bg-blue-600 text-white",
-              btnClass:
-                "bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100",
-            },
-            {
-              value: "devnote",
-              abbr: "NOT",
-              label: "Yazılımcıya Not",
-              activeClass: "bg-amber-600 text-white",
-              btnClass:
-                "bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-100",
-            },
-          ];
-
-          const activeDropdown = ref(null);
-
-          let idCounter = 0;
-          function getUniqueId() {
-            return "id_" + Date.now() + "_" + idCounter++;
-          }
-
-          const blocks = ref([
-            {
-              id: getUniqueId(),
-              name: "Blok 1",
-              lines: [{ id: getUniqueId(), type: "p", content: "" }],
-            },
-          ]);
-
-          const lineRefs = ref({});
-
-          function setLineRef(bIndex, lIndex, el) {
-            const key = `${bIndex}_${lIndex}`;
-            if (el) lineRefs.value[key] = el;
-          }
-
-          const toastMessage = ref("");
-          const toastVisible = ref(false);
-          let toastTimer = null;
-
-          function showToast(msg) {
-            toastMessage.value = msg;
-            toastVisible.value = true;
-            clearTimeout(toastTimer);
-            toastTimer = setTimeout(() => {
-              toastVisible.value = false;
-            }, 2500);
-          }
-
-          function adjustHeight(el) {
-            if (!el) return;
-            el.style.height = "auto";
-            el.style.height = el.scrollHeight + "px";
-          }
-
-          function triggerAllHeights() {
-            nextTick(() => {
-              Object.values(lineRefs.value).forEach((el) => {
-                if (el) adjustHeight(el);
-              });
-            });
-          }
-
-          function toggleDropdown(bIndex, lIndex) {
-            const key = `${bIndex}_${lIndex}`;
-            if (activeDropdown.value === key) {
-              activeDropdown.value = null;
-            } else {
-              activeDropdown.value = key;
-            }
-          }
-
-          function getDropdownBtnClass(type) {
-            const found = types.find((t) => t.value === type);
-            return found
-              ? found.btnClass
-              : "bg-slate-100 text-slate-700 border-slate-300";
-          }
-
-          function setLineType(bIndex, lIndex, type) {
-            blocks.value[bIndex].lines[lIndex].type = type;
-            activeDropdown.value = null;
-            triggerAllHeights();
-          }
-
-          function addNewBlock() {
-            const newBName = "Blok " + (blocks.value.length + 1);
-            blocks.value.push({
-              id: getUniqueId(),
-              name: newBName,
-              lines: [{ id: getUniqueId(), type: "p", content: "" }],
-            });
-            showToast("✓ Yeni Blok eklendi");
-            nextTick(() => {
-              focusLine(blocks.value.length - 1, 0);
-            });
-          }
-
-          function deleteBlock(bIndex) {
-            if (blocks.value.length <= 1) return;
-            blocks.value.splice(bIndex, 1);
-            activeDropdown.value = null;
-            triggerAllHeights();
-          }
-
-          function addNewLine(bIndex, lIndex) {
-            const newLine = { id: getUniqueId(), type: "p", content: "" };
-            blocks.value[bIndex].lines.splice(lIndex, 0, newLine);
-            nextTick(() => {
-              focusLine(bIndex, lIndex);
-            });
-          }
-
-          function deleteLine(bIndex, lIndex) {
-            const blockLines = blocks.value[bIndex].lines;
-            if (blockLines.length <= 1) {
-              blockLines[0].content = "";
-              blockLines[0].type = "p";
-              return;
-            }
-            blockLines.splice(lIndex, 1);
-            activeDropdown.value = null;
-            triggerAllHeights();
-          }
-
-          function focusLine(bIndex, lIndex) {
-            const key = `${bIndex}_${lIndex}`;
-            const el = lineRefs.value[key];
-            if (el) {
-              el.focus();
-              adjustHeight(el);
-            }
-          }
-
-          function focusPrev(bIndex, lIndex) {
-            if (lIndex > 0) {
-              focusLine(bIndex, lIndex - 1);
-            } else if (bIndex > 0) {
-              const prevBlockLines = blocks.value[bIndex - 1].lines;
-              focusLine(bIndex - 1, prevBlockLines.length - 1);
-            }
-          }
-
-          function focusNext(bIndex, lIndex) {
-            const blockLines = blocks.value[bIndex].lines;
-            if (lIndex < blockLines.length - 1) {
-              focusLine(bIndex, lIndex + 1);
-            } else if (bIndex < blocks.value.length - 1) {
-              focusLine(bIndex + 1, 0);
-            }
-          }
-
-          function handleEnter(bIndex, lIndex, event) {
-            // Shift + Enter -> aynı satır içinde yeni satır oluştur
-            if (event.shiftKey) {
-              const textarea = event.target;
-
-              const start = textarea.selectionStart;
-              const end = textarea.selectionEnd;
-
-              const value = textarea.value;
-
-              textarea.value =
-                value.substring(0, start) + "\n" + value.substring(end);
-
-              blocks.value[bIndex].lines[lIndex].content = textarea.value;
-
-              nextTick(() => {
-                textarea.selectionStart = textarea.selectionEnd = start + 1;
-                adjustHeight(textarea);
-              });
-
-              return;
-            }
-            const currentLine = blocks.value[bIndex].lines[lIndex];
-            const text = currentLine.content;
-            const cursorPosition = event.target.selectionStart;
-
-            const before = text.substring(0, cursorPosition);
-            const after = text.substring(cursorPosition);
-
-            currentLine.content = before;
-            adjustHeight(event.target);
-            let nextType = currentLine.type;
-            if (["h1", "h2", "h3", "h4"].includes(nextType)) {
-              nextType = "p";
-            }
-            const newLine = {
-              id: getUniqueId(),
-              type: nextType,
-              content: after,
-            };
-
-            blocks.value[bIndex].lines.splice(lIndex + 1, 0, newLine);
-
-            nextTick(() => {
-              focusLine(bIndex, lIndex + 1);
-              const key = `${bIndex}_${lIndex + 1}`;
-              const el = lineRefs.value[key];
-              if (el) {
-                el.selectionStart = el.selectionEnd = 0;
-              }
-            });
-          }
-
-          function handleBackspace(bIndex, lIndex, event) {
-            const currentLine = blocks.value[bIndex].lines[lIndex];
-            const cursorPosition = event.target.selectionStart;
-
-            if (cursorPosition === 0 && lIndex > 0) {
-              const prevLine = blocks.value[bIndex].lines[lIndex - 1];
-              const originalPrevLength = prevLine.content.length;
-
-              prevLine.content += currentLine.content;
-              blocks.value[bIndex].lines.splice(lIndex, 1);
-
-              nextTick(() => {
-                const key = `${bIndex}_${lIndex - 1}`;
-                const el = lineRefs.value[key];
-                if (el) {
-                  el.focus();
-                  el.selectionStart = el.selectionEnd = originalPrevLength;
-                  adjustHeight(el);
-                }
-              });
-            }
-          }
-
-          function getLineClass(type) {
-            return `editor-line-${type}`;
-          }
-
-          function clearAll() {
-            if (
-              confirm(
-                "Tüm metinleri ve SEO verilerini silmek istediğinize emin misiniz?",
-              )
-            ) {
-              seo.h1 = "";
-              seo.metaTitle = "";
-              seo.metaDescription = "";
-              seo.url = "";
-              blocks.value = [
-                {
-                  id: getUniqueId(),
-                  name: "Blok 1",
-                  lines: [{ id: getUniqueId(), type: "p", content: "" }],
-                },
-              ];
-              showToast("Editör temizlendi");
-            }
-          }
-
-          function generateJSONData() {
-            const exportedBlocks = blocks.value.map((b) => {
-              const items = b.lines
-                .map((l) => ({ type: l.type, content: l.content.trim() }))
-                .filter((l) => l.content || l.type === "p");
-
-              return {
-                name: b.name.trim() || "Blok",
-                items: items,
-              };
-            });
-
-            return {
-              seo: {
-                h1: seo.h1.trim(),
-                metaTitle: seo.metaTitle.trim(),
-                metaDescription: seo.metaDescription.trim(),
-                url: seo.url.trim(),
-              },
-              blocks: exportedBlocks,
-            };
-          }
-
-          function downloadJSON() {
-            const data = generateJSONData();
-            const json = JSON.stringify(data, null, 2);
-            const blob = new Blob([json], {
-              type: "application/json;charset=utf-8",
-            });
-            const filename =
-              (seo.h1 || "icerik_koprusu")
-                .replace(/[^\w\sа-яА-ЯğüşöçıİĞÜŞÖÇ-]/gi, "")
-                .trim()
-                .replace(/\s+/g, "_") || "icerik";
-            saveAs(blob, filename + ".json");
-            showToast("✓ JSON dosyası indirildi");
-          }
-
-          async function downloadDOCX() {
-            try {
-              const data = generateJSONData();
-              const children = [];
-
-              if (data.seo.h1) {
-                children.push(
-                  new docx.Paragraph({
-                    children: [
-                      new docx.TextRun({
-                        text: data.seo.h1,
-                        bold: true,
-                        size: 48,
-                        font: "Calibri",
-                      }),
-                    ],
-                    heading: docx.HeadingLevel.HEADING_1,
-                    spacing: { after: 200 },
-                  }),
-                );
-              }
-
-              const metaFields = [
-                { label: "Meta Title", value: data.seo.metaTitle },
-                { label: "Meta Description", value: data.seo.metaDescription },
-                { label: "URL", value: data.seo.url },
-              ];
-
-              let hasMeta = false;
-              for (const field of metaFields) {
-                if (field.value) {
-                  hasMeta = true;
-                  children.push(
-                    new docx.Paragraph({
-                      children: [
-                        new docx.TextRun({
-                          text: field.label + ": ",
-                          bold: true,
-                          size: 20,
-                          font: "Calibri",
-                          color: "64748B",
-                        }),
-                        new docx.TextRun({
-                          text: field.value,
-                          size: 20,
-                          font: "Calibri",
-                        }),
-                      ],
-                      spacing: { after: 60 },
-                    }),
-                  );
-                }
-              }
-
-              if (hasMeta || data.seo.h1) {
-                children.push(
-                  new docx.Paragraph({
-                    children: [],
-                    spacing: { before: 200, after: 200 },
-                    border: {
-                      bottom: {
-                        color: "CBD5E1",
-                        size: 6,
-                        style: docx.BorderStyle.SINGLE,
-                        space: 1,
-                      },
-                    },
-                  }),
-                );
-              }
-
-              data.blocks.forEach((block, blockIndex) => {
-                const blockTitle = block.name || "Blok " + (blockIndex + 1);
-                children.push(
-                  new docx.Paragraph({
-                    children: [
-                      new docx.TextRun({
-                        text: "— " + blockTitle + " —",
-                        color: "94A3B8",
-                        italics: true,
-                        size: 18,
-                        font: "Calibri",
-                      }),
-                    ],
-                    alignment: docx.AlignmentType.CENTER,
-                    spacing: { before: 360, after: 360 },
-                    border: {
-                      top: {
-                        color: "E2E8F0",
-                        size: 4,
-                        style: docx.BorderStyle.DASHED,
-                        space: 6,
-                      },
-                      bottom: {
-                        color: "E2E8F0",
-                        size: 4,
-                        style: docx.BorderStyle.DASHED,
-                        space: 6,
-                      },
-                    },
-                  }),
-                );
-
-                block.items.forEach((item) => {
-                  if (!item.content.trim() && item.type !== "p") return;
-
-                  switch (item.type) {
-                    case "h2":
-                      children.push(
-                        new docx.Paragraph({
-                          children: [
-                            new docx.TextRun({
-                              text: item.content,
-                              bold: true,
-                              size: 32,
-                              font: "Calibri",
-                            }),
-                          ],
-                          heading: docx.HeadingLevel.HEADING_2,
-                          spacing: { before: 120, after: 80 },
-                        }),
-                      );
-                      break;
-
-                    case "h3":
-                      children.push(
-                        new docx.Paragraph({
-                          children: [
-                            new docx.TextRun({
-                              text: item.content,
-                              bold: true,
-                              size: 26,
-                              font: "Calibri",
-                            }),
-                          ],
-                          heading: docx.HeadingLevel.HEADING_3,
-                          spacing: { before: 100, after: 60 },
-                        }),
-                      );
-                      break;
-                    case "h1":
-                      children.push(
-                        new docx.Paragraph({
-                          children: [
-                            new docx.TextRun({
-                              text: item.content,
-                              bold: true,
-                              size: 40,
-                              font: "Calibri",
-                            }),
-                          ],
-                          heading: docx.HeadingLevel.HEADING_1,
-                          spacing: { before: 160, after: 120 },
-                        }),
-                      );
-                      break;
-                    case "h4":
-                      children.push(
-                        new docx.Paragraph({
-                          children: [
-                            new docx.TextRun({
-                              text: item.content,
-                              bold: true,
-                              size: 22,
-                              font: "Calibri",
-                            }),
-                          ],
-                          heading: docx.HeadingLevel.HEADING_4,
-                          spacing: { before: 100, after: 60 },
-                        }),
-                      );
-                      break;
-
-                    case "p":
-                      children.push(
-                        new docx.Paragraph({
-                          children: [
-                            new docx.TextRun({
-                              text: item.content,
-                              size: 22,
-                              font: "Calibri",
-                            }),
-                          ],
-                          spacing: { after: 320 },
-                        }),
-                      );
-                      break;
-
-                    case "image_link":
-                      children.push(
-                        new docx.Paragraph({
-                          children: [
-                            new docx.ExternalHyperlink({
-                              children: [
-                                new docx.TextRun({
-                                  text: item.content,
-                                  style: "Hyperlink",
-                                  size: 20,
-                                  font: "Calibri",
-                                }),
-                              ],
-                              link: item.content,
-                            }),
-                          ],
-                          spacing: { after: 80 },
-                        }),
-                      );
-                      break;
-
-                    case "devnote":
-                      children.push(
-                        new docx.Paragraph({
-                          children: [
-                            new docx.TextRun({
-                              text: "📝 " + item.content,
-                              italics: true,
-                              highlight: "yellow",
-                              size: 20,
-                              font: "Calibri",
-                            }),
-                          ],
-                          spacing: { after: 100 },
-                        }),
-                      );
-                      break;
-                  }
-                });
-              });
-
-              const doc = new docx.Document({
-                creator: "İçerik Köprüsü",
-                title: data.seo.h1 || "İçerik",
-                description: data.seo.metaDescription || "",
-                sections: [
-                  {
-                    properties: {
-                      page: {
-                        margin: {
-                          top: 1440,
-                          right: 1440,
-                          bottom: 1440,
-                          left: 1440,
-                        },
-                      },
-                    },
-                    children: children,
-                  },
-                ],
-              });
-
-              const blob = await docx.Packer.toBlob(doc);
-              const filename =
-                (seo.h1 || "icerik_koprusu")
-                  .replace(/[^\w\sа-яА-ЯğüşöçıİĞÜŞÖÇ-]/gi, "")
-                  .trim()
-                  .replace(/\s+/g, "_") || "icerik";
-              saveAs(blob, filename + ".docx");
-              showToast("✓ DOCX dosyası indirildi");
-            } catch (err) {
-              console.error(err);
-              showToast("⚠ DOCX oluşturulurken hata oluştu");
-            }
-          }
-          async function fetchDocList() {
-            try {
-              const res = await fetch("/api/docs");
-              if (!res.ok) return; // 404 vs alırsa (Live Server gibi) dur
-
-              const contentType = res.headers.get("content-type");
-              if (!contentType || !contentType.includes("application/json"))
-                return;
-
-              docList.value = await res.json();
-            } catch (e) {
-              // Live Server modundayken sunucu olmadığı için buraya düşer, sayfayı patlatmaz
-              console.log("Local ortamsınız, sunucu bağlantısı atlandı.");
-            }
-          }
-
-          onMounted(() => {
-            triggerAllHeights();
-            fetchDocList(); // Taslak listesini çeker
-            document.addEventListener("click", () => {
-              activeDropdown.value = null;
-            });
-          });
-
-          return {
-            seo,
-            types,
-            blocks,
-            activeDropdown,
-            lineRefs,
-            setLineRef,
-            toastMessage,
-            toastVisible,
-            toggleDropdown,
-            getDropdownBtnClass,
-            setLineType,
-            addNewBlock,
-            deleteBlock,
-            addNewLine,
-            deleteLine,
-            handleEnter,
-            handleBackspace,
-            focusPrev,
-            focusNext,
-            getLineClass,
-            clearAll,
-            downloadJSON,
-            downloadDOCX,
-            adjustHeight,
-            docList,
-          };
-        },
-      }).mount("#app");
-    </script>
+    <!-- Main JS Application Module -->
+    <script type="module" src="/static/js/app.js"></script>
   </body>
 </html>

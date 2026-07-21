@@ -8,3 +8,6 @@ ENV/
 
 # Local documents / user data folder
 documents/
+
+
+run.bat
