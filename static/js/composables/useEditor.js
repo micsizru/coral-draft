@@ -19,7 +19,7 @@ import {
 } from "../services/exportService.js";
 
 export function useEditor() {
-  const { ref, reactive, nextTick, onMounted, watch } = window.Vue;
+  const { ref, reactive, nextTick, onMounted, onUnmounted, watch } = window.Vue;
 
   const sidebarOpen = ref(true);
 
@@ -45,6 +45,18 @@ export function useEditor() {
   const lineRefs = ref({});
   const toastMessage = ref("");
   const toastVisible = ref(false);
+  /* FAZ 2: Active State & Link Modal States */
+  const activeFormats = reactive({
+    bold: false,
+    italic: false,
+    link: false,
+  });
+
+  const linkModal = reactive({
+    show: false,
+    url: "",
+    savedRange: null,
+  });
 
   const seo = reactive({
     h1: "",
@@ -80,6 +92,87 @@ export function useEditor() {
     adjustHeight(el);
   }
 
+  /* ACTIVE STATE Tarayıcı */
+  function updateActiveFormats() {
+    const selection = window.getSelection();
+    if (!selection || selection.rangeCount === 0) {
+      activeFormats.bold = false;
+      activeFormats.italic = false;
+      activeFormats.link = false;
+      return;
+    }
+    try {
+      activeFormats.bold = document.queryCommandState("bold");
+      activeFormats.italic = document.queryCommandState("italic");
+
+      const anchorNode = selection.anchorNode;
+      const element =
+        anchorNode?.nodeType === 1 ? anchorNode : anchorNode?.parentElement;
+      activeFormats.link = !!element?.closest("a");
+    } catch (e) {
+      activeFormats.bold = false;
+      activeFormats.italic = false;
+      activeFormats.link = false;
+    }
+  }
+
+  /* FAZ 2 FORMATLAMA AKSİYONLARI */
+  function formatBold() {
+    document.execCommand("bold", false, null);
+    updateActiveFormats();
+  }
+
+  function formatItalic() {
+    document.execCommand("italic", false, null);
+    updateActiveFormats();
+  }
+
+  function openLinkModal() {
+    const selection = window.getSelection();
+    if (selection && selection.rangeCount > 0) {
+      linkModal.savedRange = selection.getRangeAt(0).cloneRange();
+      const node = selection.anchorNode;
+      const anchor = (
+        node?.nodeType === 1 ? node : node?.parentElement
+      )?.closest("a");
+      linkModal.url = anchor ? anchor.getAttribute("href") || "" : "https://";
+    } else {
+      linkModal.url = "https://";
+    }
+    linkModal.show = true;
+  }
+
+  function closeLinkModal() {
+    linkModal.show = false;
+    linkModal.savedRange = null;
+    linkModal.url = "";
+  }
+
+  function applyLink() {
+    if (linkModal.savedRange) {
+      const selection = window.getSelection();
+      selection.removeAllRanges();
+      selection.addRange(linkModal.savedRange);
+    }
+    if (
+      !linkModal.url ||
+      linkModal.url.trim() === "" ||
+      linkModal.url === "https://"
+    ) {
+      document.execCommand("unlink", false, null);
+    } else {
+      document.execCommand("createLink", false, linkModal.url.trim());
+    }
+    closeLinkModal();
+    updateActiveFormats();
+  }
+
+  function clearFormat() {
+    document.execCommand("removeFormat", false, null);
+    document.execCommand("unlink", false, null);
+    updateActiveFormats();
+  }
+
   function setInitialContent(el, content) {
     if (!el || !el.isContentEditable) return;
     if (document.activeElement !== el) {
@@ -108,6 +201,7 @@ export function useEditor() {
     if (el) {
       setInitialContent(el, line.content || "");
       adjustHeight(el);
+      updateActiveFormats();
     }
   }
 
@@ -115,6 +209,7 @@ export function useEditor() {
     const el = event.currentTarget;
     line.content = el.innerHTML || "";
     adjustHeight(el);
+    updateActiveFormats();
   }
 
   function handlePaste(event, line) {
@@ -298,18 +393,17 @@ export function useEditor() {
   function setLineType(bIndex, lIndex, type) {
     const line = blocks.value[bIndex]?.lines?.[lIndex];
     if (!line) return;
-
     line.type = type;
-
-    // P'den başlığa geçerken HTML etiketlerini temizle (<div> vs. kalmasın)
+    // P'den başlığa geçerken alt satır (\n) artıklarını ve HTML etiketlerini temizle
     if (["h1", "h2", "h3", "h4", "image_link"].includes(type)) {
       if (line.content) {
         const tempDiv = document.createElement("div");
         tempDiv.innerHTML = line.content;
-        line.content = (tempDiv.innerText || tempDiv.textContent || "").trim();
+        line.content = (tempDiv.innerText || tempDiv.textContent || "")
+          .replace(/[\r\n]+/g, " ")
+          .trim();
       }
     }
-
     activeDropdown.value = null;
     nextTick(() => {
       const key = `${bIndex}_${lIndex}`;
@@ -539,6 +633,25 @@ export function useEditor() {
   }
 
   function handleEditableKeydown(event, bIndex, lIndex, line) {
+    const isCmdOrCtrl = event.ctrlKey || event.metaKey;
+
+    // KISAYOLLAR: Ctrl+B, Ctrl+I, Ctrl+K
+    if (isCmdOrCtrl && event.key.toLowerCase() === "b") {
+      event.preventDefault();
+      formatBold();
+      return;
+    }
+    if (isCmdOrCtrl && event.key.toLowerCase() === "i") {
+      event.preventDefault();
+      formatItalic();
+      return;
+    }
+    if (isCmdOrCtrl && event.key.toLowerCase() === "k") {
+      event.preventDefault();
+      openLinkModal();
+      return;
+    }
+
     if (event.key === "Enter" && !event.shiftKey) {
       event.preventDefault();
 
@@ -717,12 +830,19 @@ export function useEditor() {
     { deep: true },
   );
 
+  const selectionHandler = () => updateActiveFormats();
+
   onMounted(() => {
     triggerAllHeights();
     fetchDocList();
     document.addEventListener("click", () => {
       activeDropdown.value = null;
     });
+    document.addEventListener("selectionchange", selectionHandler);
+  });
+
+  onUnmounted(() => {
+    document.removeEventListener("selectionchange", selectionHandler);
   });
 
   return {
@@ -765,5 +885,13 @@ export function useEditor() {
     loadDoc,
     createNewDoc,
     deleteDoc,
+    activeFormats,
+    linkModal,
+    formatBold,
+    formatItalic,
+    openLinkModal,
+    closeLinkModal,
+    applyLink,
+    clearFormat,
   };
 }

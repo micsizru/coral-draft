@@ -6,8 +6,12 @@ export function getUniqueId() {
 
 export function adjustHeight(el) {
   if (!el) return;
-  el.style.height = "auto";
-  el.style.height = el.scrollHeight + 2 + "px";
+  if (el.tagName === "TEXTAREA") {
+    el.style.height = "auto";
+    el.style.height = el.scrollHeight + "px";
+  } else {
+    el.style.height = "auto";
+  }
 }
 
 export function getLineClass(type) {
