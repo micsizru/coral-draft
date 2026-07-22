@@ -37,6 +37,78 @@ export function downloadJSON(seo, blocks, showToast) {
   if (showToast) showToast("✓ JSON dosyası indirildi");
 }
 
+/* FAZ 3: HTML string metinlerini docx.js nesnelerine dönüştüren Parser */
+function parseHtmlToDocxElements(htmlContent, docx) {
+  if (!htmlContent)
+    return [new docx.TextRun({ text: "", font: "Calibri", size: 22 })];
+
+  const temp = document.createElement("div");
+  temp.innerHTML = htmlContent;
+
+  const elements = [];
+
+  function walk(node, currentStyle = { bold: false, italics: false }) {
+    for (let child of node.childNodes) {
+      if (child.nodeType === Node.TEXT_NODE) {
+        if (child.textContent) {
+          elements.push(
+            new docx.TextRun({
+              text: child.textContent,
+              bold: currentStyle.bold,
+              italics: currentStyle.italics,
+              font: "Calibri",
+              size: 22,
+            }),
+          );
+        }
+      } else if (child.nodeType === Node.ELEMENT_NODE) {
+        const tagName = child.tagName.toUpperCase();
+        if (tagName === "B" || tagName === "STRONG") {
+          walk(child, { ...currentStyle, bold: true });
+        } else if (tagName === "I" || tagName === "EM") {
+          walk(child, { ...currentStyle, italics: true });
+        } else if (tagName === "A") {
+          const href = child.getAttribute("href") || "#";
+          const linkText = child.textContent || href;
+          const linkRun = new docx.TextRun({
+            text: linkText,
+            bold: currentStyle.bold,
+            italics: currentStyle.italics,
+            color: "0091D2",
+            underline: {},
+            font: "Calibri",
+            size: 22,
+          });
+          elements.push(
+            new docx.ExternalHyperlink({
+              children: [linkRun],
+              link: href,
+            }),
+          );
+        } else if (tagName === "BR") {
+          elements.push(new docx.TextRun({ break: 1 }));
+        } else {
+          walk(child, currentStyle);
+        }
+      }
+    }
+  }
+
+  walk(temp);
+
+  if (elements.length === 0) {
+    elements.push(
+      new docx.TextRun({
+        text: temp.textContent || "",
+        font: "Calibri",
+        size: 22,
+      }),
+    );
+  }
+
+  return elements;
+}
+
 export async function downloadDOCX(seo, blocks, showToast) {
   const docx = window.docx;
   const saveAs = window.saveAs;
@@ -58,7 +130,7 @@ export async function downloadDOCX(seo, blocks, showToast) {
           ],
           heading: docx.HeadingLevel.HEADING_1,
           spacing: { after: 200 },
-        })
+        }),
       );
     }
 
@@ -89,7 +161,7 @@ export async function downloadDOCX(seo, blocks, showToast) {
               }),
             ],
             spacing: { after: 60 },
-          })
+          }),
         );
       }
     }
@@ -107,7 +179,7 @@ export async function downloadDOCX(seo, blocks, showToast) {
               space: 1,
             },
           },
-        })
+        }),
       );
     }
 
@@ -140,7 +212,7 @@ export async function downloadDOCX(seo, blocks, showToast) {
               space: 6,
             },
           },
-        })
+        }),
       );
 
       block.items.forEach((item) => {
@@ -160,7 +232,7 @@ export async function downloadDOCX(seo, blocks, showToast) {
                 ],
                 heading: docx.HeadingLevel.HEADING_2,
                 spacing: { before: 120, after: 80 },
-              })
+              }),
             );
             break;
 
@@ -177,7 +249,7 @@ export async function downloadDOCX(seo, blocks, showToast) {
                 ],
                 heading: docx.HeadingLevel.HEADING_3,
                 spacing: { before: 100, after: 60 },
-              })
+              }),
             );
             break;
           case "h1":
@@ -193,7 +265,7 @@ export async function downloadDOCX(seo, blocks, showToast) {
                 ],
                 heading: docx.HeadingLevel.HEADING_1,
                 spacing: { before: 160, after: 120 },
-              })
+              }),
             );
             break;
           case "h4":
@@ -209,22 +281,16 @@ export async function downloadDOCX(seo, blocks, showToast) {
                 ],
                 heading: docx.HeadingLevel.HEADING_4,
                 spacing: { before: 100, after: 60 },
-              })
+              }),
             );
             break;
 
           case "p":
             children.push(
               new docx.Paragraph({
-                children: [
-                  new docx.TextRun({
-                    text: item.content,
-                    size: 22,
-                    font: "Calibri",
-                  }),
-                ],
+                children: parseHtmlToDocxElements(item.content, docx),
                 spacing: { after: 320 },
-              })
+              }),
             );
             break;
 
@@ -245,7 +311,7 @@ export async function downloadDOCX(seo, blocks, showToast) {
                   }),
                 ],
                 spacing: { after: 80 },
-              })
+              }),
             );
             break;
 
@@ -262,7 +328,7 @@ export async function downloadDOCX(seo, blocks, showToast) {
                   }),
                 ],
                 spacing: { after: 100 },
-              })
+              }),
             );
             break;
         }

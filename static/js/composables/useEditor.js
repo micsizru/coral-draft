@@ -135,9 +135,9 @@ export function useEditor() {
       const anchor = (
         node?.nodeType === 1 ? node : node?.parentElement
       )?.closest("a");
-      linkModal.url = anchor ? anchor.getAttribute("href") || "" : "https://";
+      linkModal.url = anchor ? anchor.getAttribute("href") || "" : "";
     } else {
-      linkModal.url = "https://";
+      linkModal.url = "";
     }
     linkModal.show = true;
   }
@@ -147,22 +147,57 @@ export function useEditor() {
     linkModal.savedRange = null;
     linkModal.url = "";
   }
-
   function applyLink() {
     if (linkModal.savedRange) {
       const selection = window.getSelection();
       selection.removeAllRanges();
       selection.addRange(linkModal.savedRange);
     }
-    if (
-      !linkModal.url ||
-      linkModal.url.trim() === "" ||
-      linkModal.url === "https://"
-    ) {
+
+    let url = linkModal.url ? linkModal.url.trim() : "";
+
+    if (url) {
+      // Sorun 8 Çözümü: Çifte katlanan https://https:// veya http:// tekrarlarını temizle
+      url = url.replace(/^(https?:\/\/)+/gi, "https://");
+
+      // Eğer protokol yazılmadıysa (lala.com) otomatik https:// ekle
+      if (!/^https?:\/\//i.test(url)) {
+        url = "https://" + url;
+      }
+    }
+
+    if (!url || url === "https://") {
       document.execCommand("unlink", false, null);
     } else {
-      document.execCommand("createLink", false, linkModal.url.trim());
+      const selection = window.getSelection();
+      const range =
+        linkModal.savedRange ||
+        (selection && selection.rangeCount > 0
+          ? selection.getRangeAt(0)
+          : null);
+      const node = selection?.anchorNode;
+      const existingAnchor = (
+        node?.nodeType === 1 ? node : node?.parentElement
+      )?.closest("a");
+
+      if (existingAnchor) {
+        // Durum 1: Zaten bir linkin içindeysek sadece href'i güncelle
+        existingAnchor.setAttribute("href", url);
+      } else if (range && range.collapsed) {
+        // Sorun 2 Çözümü: Hiç metin seçilmediyse (0 karakter) DOM'u bozmadan temiz link ekle
+        const anchorHtml = `<a href="${url}" target="_blank" rel="noopener noreferrer">${url}</a>&nbsp;`;
+        document.execCommand("insertHTML", false, anchorHtml);
+      } else {
+        // Durum 3: Metin seçiliyken standart link ekle
+        document.execCommand("createLink", false, url);
+      }
     }
+
+    const activeEl = document.activeElement;
+    if (activeEl && activeEl.classList.contains("rich-text-editor")) {
+      activeEl.dispatchEvent(new Event("input", { bubbles: true }));
+    }
+
     closeLinkModal();
     updateActiveFormats();
   }
@@ -207,7 +242,12 @@ export function useEditor() {
 
   function onContentInput(event, line) {
     const el = event.currentTarget;
-    line.content = el.innerHTML || "";
+    let html = el.innerHTML || "";
+
+    // Tarayıcının araya sokuşturduğu gizli <div> ve </div> etiketlerini sök
+    html = html.replace(/<\/?div>/gi, "");
+
+    line.content = html;
     adjustHeight(el);
     updateActiveFormats();
   }
@@ -223,57 +263,61 @@ export function useEditor() {
 
   function getCursorPosition(target) {
     if (!target) return 0;
-
     if (target.isContentEditable) {
       const selection = window.getSelection();
       if (!selection || selection.rangeCount === 0)
         return target.textContent?.length || 0;
-
       const range = selection.getRangeAt(0);
       const preCaretRange = range.cloneRange();
       preCaretRange.selectNodeContents(target);
       preCaretRange.setEnd(range.startContainer, range.startOffset);
       return preCaretRange.toString().length;
     }
-
     return target.selectionStart ?? 0;
   }
 
   function setCursorPosition(target, position) {
     if (!target) return;
-
     if (target.isContentEditable) {
       const selection = window.getSelection();
       const range = document.createRange();
-      const content = target.textContent || "";
-      const safePosition = Math.min(Math.max(position, 0), content.length);
       let currentOffset = 0;
-      let node = target.firstChild;
+      let found = false;
 
-      while (node) {
+      const walkNodes = (node) => {
+        if (found) return;
         if (node.nodeType === Node.TEXT_NODE) {
-          const nodeLength = node.textContent.length;
-          if (currentOffset + nodeLength >= safePosition) {
-            range.setStart(node, safePosition - currentOffset);
-            range.setEnd(node, safePosition - currentOffset);
-            selection.removeAllRanges();
-            selection.addRange(range);
+          const len = node.textContent.length;
+          if (currentOffset + len >= position) {
+            range.setStart(node, Math.min(position - currentOffset, len));
+            range.collapse(true);
+            found = true;
             return;
           }
-          currentOffset += nodeLength;
+          currentOffset += len;
+        } else {
+          for (let child of node.childNodes) {
+            walkNodes(child);
+            if (found) return;
+          }
         }
-        node = node.nextSibling;
+      };
+
+      walkNodes(target);
+
+      if (!found) {
+        range.selectNodeContents(target);
+        range.collapse(false);
       }
 
-      range.setStart(target, 0);
-      range.collapse(true);
       selection.removeAllRanges();
       selection.addRange(range);
       return;
     }
 
     if (typeof target.selectionStart === "number") {
-      target.selectionStart = target.selectionEnd = position;
+      const safePos = Math.min(position, target.value.length);
+      target.selectionStart = target.selectionEnd = safePos;
     }
   }
 
@@ -536,69 +580,79 @@ export function useEditor() {
   }
 
   function deleteOrMergeBlock(bIndex, lIndex) {
-    const blockLines = blocks.value[bIndex]?.lines;
-    if (!blockLines || lIndex <= 0) return;
+    if (lIndex > 0) {
+      const blockLines = blocks.value[bIndex]?.lines;
+      if (!blockLines) return;
+      const currentLine = blockLines[lIndex];
+      const prevLine = blockLines[lIndex - 1];
+      if (!currentLine || !prevLine) return;
 
-    const currentLine = blockLines[lIndex];
-    const prevLine = blockLines[lIndex - 1];
-    if (!currentLine || !prevLine) return;
+      const currentRawText = currentLine.content
+        ? currentLine.content.replace(/<[^>]+>/g, "").trim()
+        : "";
+      const isCurrentEmpty = currentRawText === "";
+      const isPrevPlain = ["h1", "h2", "h3", "h4", "image_link"].includes(
+        prevLine.type,
+      );
 
-    // HTML etiketleri hariç gerçek metin kontrolü
-    const currentRawText = currentLine.content
-      ? currentLine.content.replace(/<[^>]+>/g, "").trim()
-      : "";
-    const isCurrentEmpty = currentRawText === "";
-    const isPrevPlain = ["h1", "h2", "h3", "h4", "image_link"].includes(
-      prevLine.type,
-    );
-    const prevTextLength = prevLine.content
-      ? prevLine.content.replace(/<[^>]+>/g, "").length
-      : 0;
+      // Üst satırın silinmeden önceki metin uzunluğunu (imlecin gideceği yeri) hesapla
+      const tempDiv = document.createElement("div");
+      tempDiv.innerHTML = prevLine.content || "";
+      const prevTextLength = (tempDiv.innerText || tempDiv.textContent || "")
+        .length;
 
-    if (isCurrentEmpty) {
-      // Satır boşsa (sadece gizli <br> varsa) direkt sil, içeriğini üst satıra taşıma!
-      blockLines.splice(lIndex, 1);
-    } else {
-      // Satırın içi doluysa içerikleri birleştir
-      let addition = currentLine.content || "";
-
-      // Eğer üst satır Başlık ise gelen metindeki HTML etiketlerini (<br>, <div>) süz
-      if (isPrevPlain) {
-        const temp = document.createElement("div");
-        temp.innerHTML = addition;
-        addition = (temp.innerText || temp.textContent || "").trim();
-      }
-
-      prevLine.content = (prevLine.content || "") + addition;
-      blockLines.splice(lIndex, 1);
-    }
-
-    // Üst satır başlık ise üzerinde kalmış olabilecek tüm HTML artıklarını temizle
-    if (isPrevPlain && prevLine.content) {
-      const temp = document.createElement("div");
-      temp.innerHTML = prevLine.content;
-      prevLine.content = (temp.innerText || temp.textContent || "")
-        .replace(/<[^>]+>/g, "")
-        .trim();
-    }
-
-    nextTick(() => {
-      const prevKey = `${bIndex}_${lIndex - 1}`;
-      const updatedPrevEl = lineRefs.value[prevKey];
-      if (updatedPrevEl) {
-        if (updatedPrevEl.isContentEditable) {
-          updatedPrevEl.innerHTML = prevLine.content || "";
-          updatedPrevEl.focus();
-          setCursorPosition(updatedPrevEl, prevTextLength);
-        } else {
-          updatedPrevEl.focus();
-          updatedPrevEl.value = prevLine.content || "";
-          updatedPrevEl.selectionStart = updatedPrevEl.selectionEnd =
-            prevTextLength;
+      if (isCurrentEmpty) {
+        blockLines.splice(lIndex, 1);
+      } else {
+        let addition = currentLine.content || "";
+        if (isPrevPlain) {
+          const temp = document.createElement("div");
+          temp.innerHTML = addition;
+          addition = (temp.innerText || temp.textContent || "").trim();
         }
-        adjustHeight(updatedPrevEl);
+        prevLine.content = (prevLine.content || "") + addition;
+        blockLines.splice(lIndex, 1);
       }
-    });
+
+      if (isPrevPlain && prevLine.content) {
+        const temp = document.createElement("div");
+        temp.innerHTML = prevLine.content;
+        prevLine.content = (temp.innerText || temp.textContent || "")
+          .replace(/<[^>]+>/g, "")
+          .trim();
+      }
+
+      nextTick(() => {
+        const prevKey = `${bIndex}_${lIndex - 1}`;
+        const updatedPrevEl = lineRefs.value[prevKey];
+        if (updatedPrevEl) {
+          if (updatedPrevEl.isContentEditable) {
+            updatedPrevEl.innerHTML = prevLine.content || "";
+          } else {
+            updatedPrevEl.value = prevLine.content || "";
+          }
+          updatedPrevEl.focus();
+          // İmleci doğrudan üst satırın EN SONUNA yerleştir
+          setCursorPosition(updatedPrevEl, prevTextLength);
+          adjustHeight(updatedPrevEl);
+        }
+      });
+    } else if (bIndex > 0) {
+      // Eğer bloğun ilk satırındaysak (lIndex === 0), üst bloğun en son satırına odaklan
+      const prevBlockLines = blocks.value[bIndex - 1]?.lines;
+      if (!prevBlockLines || prevBlockLines.length === 0) return;
+      const targetLIndex = prevBlockLines.length - 1;
+
+      nextTick(() => {
+        focusLine(bIndex - 1, targetLIndex);
+        const targetKey = `${bIndex - 1}_${targetLIndex}`;
+        const targetEl = lineRefs.value[targetKey];
+        if (targetEl) {
+          const textLen = (targetEl.textContent || targetEl.value || "").length;
+          setCursorPosition(targetEl, textLen);
+        }
+      });
+    }
   }
 
   function handleHeadingKeydown(event, bIndex, lIndex, line) {
@@ -682,10 +736,10 @@ export function useEditor() {
     }
 
     if (event.key === "Backspace") {
-      const selection = window.getSelection();
-      const atStart =
-        selection && selection.isCollapsed && selection.anchorOffset === 0;
-      if (atStart) {
+      // Bizim yazdığımız milimetrik harf sayıcı kontrolü
+      const cursorPos = getCursorPosition(event.target);
+      // Eğer imleç AÇIKÇA ve GERÇEKTEN satırın 0. harfindeyse sil/birleştir
+      if (cursorPos === 0) {
         event.preventDefault();
         deleteOrMergeBlock(bIndex, lIndex);
       }
