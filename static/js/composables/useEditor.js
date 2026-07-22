@@ -80,11 +80,114 @@ export function useEditor() {
     adjustHeight(el);
   }
 
+  function setInitialContent(el, content) {
+    if (!el || !el.isContentEditable) return;
+    if (document.activeElement !== el) {
+      const nextContent = content || "";
+      if (el.innerHTML !== nextContent) {
+        el.innerHTML = nextContent;
+      }
+    }
+  }
+
+  function syncEditableLineContent() {
+    blocks.value.forEach((block, bIndex) => {
+      block.lines.forEach((line, lIndex) => {
+        const key = `${bIndex}_${lIndex}`;
+        const el = lineRefs.value[key];
+        if (!el || !el.isContentEditable) return;
+
+        setInitialContent(el, line.content || "");
+        adjustHeight(el);
+      });
+    });
+  }
+
+  function onContentFocus(event, line) {
+    const el = event.target;
+    if (el) {
+      setInitialContent(el, line.content || "");
+      adjustHeight(el);
+    }
+  }
+
+  function onContentInput(event, line) {
+    const el = event.currentTarget;
+    line.content = el.innerHTML || "";
+    adjustHeight(el);
+  }
+
+  function handlePaste(event, line) {
+    event.preventDefault();
+    const text = (event.clipboardData || window.clipboardData).getData(
+      "text/plain",
+    );
+    document.execCommand("insertText", false, text);
+    line.content = event.target.innerHTML;
+  }
+
+  function getCursorPosition(target) {
+    if (!target) return 0;
+
+    if (target.isContentEditable) {
+      const selection = window.getSelection();
+      if (!selection || selection.rangeCount === 0)
+        return target.textContent?.length || 0;
+
+      const range = selection.getRangeAt(0);
+      const preCaretRange = range.cloneRange();
+      preCaretRange.selectNodeContents(target);
+      preCaretRange.setEnd(range.startContainer, range.startOffset);
+      return preCaretRange.toString().length;
+    }
+
+    return target.selectionStart ?? 0;
+  }
+
+  function setCursorPosition(target, position) {
+    if (!target) return;
+
+    if (target.isContentEditable) {
+      const selection = window.getSelection();
+      const range = document.createRange();
+      const content = target.textContent || "";
+      const safePosition = Math.min(Math.max(position, 0), content.length);
+      let currentOffset = 0;
+      let node = target.firstChild;
+
+      while (node) {
+        if (node.nodeType === Node.TEXT_NODE) {
+          const nodeLength = node.textContent.length;
+          if (currentOffset + nodeLength >= safePosition) {
+            range.setStart(node, safePosition - currentOffset);
+            range.setEnd(node, safePosition - currentOffset);
+            selection.removeAllRanges();
+            selection.addRange(range);
+            return;
+          }
+          currentOffset += nodeLength;
+        }
+        node = node.nextSibling;
+      }
+
+      range.setStart(target, 0);
+      range.collapse(true);
+      selection.removeAllRanges();
+      selection.addRange(range);
+      return;
+    }
+
+    if (typeof target.selectionStart === "number") {
+      target.selectionStart = target.selectionEnd = position;
+    }
+  }
+
   function triggerAllHeights() {
     nextTick(() => {
       Object.values(lineRefs.value).forEach((el) => {
         if (el) adjustHeight(el);
       });
+      syncEditableLineContent();
     });
   }
 
@@ -163,6 +266,7 @@ export function useEditor() {
     showToast(t("toastNew"));
     nextTick(() => {
       isDocLoading = false;
+      triggerAllHeights();
     });
   }
 
@@ -192,9 +296,33 @@ export function useEditor() {
   }
 
   function setLineType(bIndex, lIndex, type) {
-    blocks.value[bIndex].lines[lIndex].type = type;
+    const line = blocks.value[bIndex]?.lines?.[lIndex];
+    if (!line) return;
+
+    line.type = type;
+
+    // P'den başlığa geçerken HTML etiketlerini temizle (<div> vs. kalmasın)
+    if (["h1", "h2", "h3", "h4", "image_link"].includes(type)) {
+      if (line.content) {
+        const tempDiv = document.createElement("div");
+        tempDiv.innerHTML = line.content;
+        line.content = (tempDiv.innerText || tempDiv.textContent || "").trim();
+      }
+    }
+
     activeDropdown.value = null;
-    triggerAllHeights();
+    nextTick(() => {
+      const key = `${bIndex}_${lIndex}`;
+      const el = lineRefs.value[key];
+      if (el) {
+        if (el.isContentEditable) {
+          el.innerHTML = line.content || "";
+        } else {
+          el.value = line.content || "";
+        }
+        adjustHeight(el);
+      }
+    });
   }
 
   function addNewBlock() {
@@ -241,8 +369,17 @@ export function useEditor() {
     const key = `${bIndex}_${lIndex}`;
     const el = lineRefs.value[key];
     if (el) {
+      if (el.isContentEditable) {
+        const line = blocks.value[bIndex]?.lines?.[lIndex];
+        if (line) {
+          setInitialContent(el, line.content || "");
+        }
+      }
       el.focus();
       adjustHeight(el);
+      if (el.isContentEditable) {
+        setCursorPosition(el, (el.textContent || "").length);
+      }
     }
   }
 
@@ -264,32 +401,222 @@ export function useEditor() {
     }
   }
 
+  function addLineAfter(bIndex, lIndex, content, type = null) {
+    const currentLine = blocks.value[bIndex].lines[lIndex];
+    if (!currentLine) return;
+
+    const newLine = {
+      id: getUniqueId(),
+      type: type || currentLine.type,
+      content,
+    };
+
+    blocks.value[bIndex].lines.splice(lIndex + 1, 0, newLine);
+    nextTick(() => {
+      focusLine(bIndex, lIndex + 1);
+    });
+  }
+
+  function deleteBlockItem(bIndex, lIndex) {
+    const blockLines = blocks.value[bIndex]?.lines;
+    if (!blockLines) return;
+
+    if (blockLines.length <= 1) {
+      blockLines[0].content = "";
+      blockLines[0].type = "p";
+      return;
+    }
+
+    blockLines.splice(lIndex, 1);
+    activeDropdown.value = null;
+    triggerAllHeights();
+  }
+
+  function focusPreviousBlock(bIndex, lIndex) {
+    if (lIndex > 0) {
+      focusLine(bIndex, lIndex - 1);
+    } else if (bIndex > 0) {
+      const prevBlockLines = blocks.value[bIndex - 1].lines;
+      focusLine(bIndex - 1, prevBlockLines.length - 1);
+    }
+  }
+
+  function deleteOrMergeBlock(bIndex, lIndex) {
+    const blockLines = blocks.value[bIndex]?.lines;
+    if (!blockLines || lIndex <= 0) return;
+
+    const currentLine = blockLines[lIndex];
+    const prevLine = blockLines[lIndex - 1];
+    if (!currentLine || !prevLine) return;
+
+    // HTML etiketleri hariç gerçek metin kontrolü
+    const currentRawText = currentLine.content
+      ? currentLine.content.replace(/<[^>]+>/g, "").trim()
+      : "";
+    const isCurrentEmpty = currentRawText === "";
+    const isPrevPlain = ["h1", "h2", "h3", "h4", "image_link"].includes(
+      prevLine.type,
+    );
+    const prevTextLength = prevLine.content
+      ? prevLine.content.replace(/<[^>]+>/g, "").length
+      : 0;
+
+    if (isCurrentEmpty) {
+      // Satır boşsa (sadece gizli <br> varsa) direkt sil, içeriğini üst satıra taşıma!
+      blockLines.splice(lIndex, 1);
+    } else {
+      // Satırın içi doluysa içerikleri birleştir
+      let addition = currentLine.content || "";
+
+      // Eğer üst satır Başlık ise gelen metindeki HTML etiketlerini (<br>, <div>) süz
+      if (isPrevPlain) {
+        const temp = document.createElement("div");
+        temp.innerHTML = addition;
+        addition = (temp.innerText || temp.textContent || "").trim();
+      }
+
+      prevLine.content = (prevLine.content || "") + addition;
+      blockLines.splice(lIndex, 1);
+    }
+
+    // Üst satır başlık ise üzerinde kalmış olabilecek tüm HTML artıklarını temizle
+    if (isPrevPlain && prevLine.content) {
+      const temp = document.createElement("div");
+      temp.innerHTML = prevLine.content;
+      prevLine.content = (temp.innerText || temp.textContent || "")
+        .replace(/<[^>]+>/g, "")
+        .trim();
+    }
+
+    nextTick(() => {
+      const prevKey = `${bIndex}_${lIndex - 1}`;
+      const updatedPrevEl = lineRefs.value[prevKey];
+      if (updatedPrevEl) {
+        if (updatedPrevEl.isContentEditable) {
+          updatedPrevEl.innerHTML = prevLine.content || "";
+          updatedPrevEl.focus();
+          setCursorPosition(updatedPrevEl, prevTextLength);
+        } else {
+          updatedPrevEl.focus();
+          updatedPrevEl.value = prevLine.content || "";
+          updatedPrevEl.selectionStart = updatedPrevEl.selectionEnd =
+            prevTextLength;
+        }
+        adjustHeight(updatedPrevEl);
+      }
+    });
+  }
+
+  function handleHeadingKeydown(event, bIndex, lIndex, line) {
+    const input = event.target;
+
+    // A) BACKSPACE İŞLEMİ
+    if (event.key === "Backspace") {
+      const isAtStart = input.selectionStart === 0 && input.selectionEnd === 0;
+      if (isAtStart) {
+        event.preventDefault(); // Sadece imleç 0. konumdaysa engelle
+        if (!line.content || line.content.trim() === "") {
+          deleteBlockItem(bIndex, lIndex);
+        } else {
+          focusPreviousBlock(bIndex, lIndex);
+        }
+      }
+      // İmleç baştan farklı bir yerdeyse e.preventDefault() ÇALIŞMAZ, harf silinir.
+      return;
+    }
+
+    // B) ENTER İŞLEMİ
+    if (event.key === "Enter" && !event.shiftKey) {
+      event.preventDefault();
+      const start = input.selectionStart ?? 0;
+      const currentText = line.content || "";
+      const leftText = currentText.substring(0, start);
+      const rightText = currentText.substring(start);
+
+      line.content = leftText;
+      addLineAfter(bIndex, lIndex, rightText, "p");
+    }
+  }
+
+  function handleEditableKeydown(event, bIndex, lIndex, line) {
+    if (event.key === "Enter" && !event.shiftKey) {
+      event.preventDefault();
+
+      const selection = window.getSelection();
+      if (!selection || !selection.rangeCount) return;
+
+      const range = selection.getRangeAt(0);
+      const endRange = range.cloneRange();
+      endRange.selectNodeContents(event.target);
+      endRange.setStart(range.endContainer, range.endOffset);
+
+      const temp = document.createElement("div");
+      temp.appendChild(endRange.extractContents());
+
+      // Böldükten sonra tarayıcının başa/sona eklediği yapay <br> etiketlerini temizle
+      let rightContent = temp.innerHTML.replace(
+        /^<br\s*\/?>|<br\s*\/?>$/gi,
+        "",
+      );
+      let leftContent = event.target.innerHTML.replace(
+        /^<br\s*\/?>|<br\s*\/?>$/gi,
+        "",
+      );
+
+      line.content = leftContent;
+      addLineAfter(bIndex, lIndex, rightContent, "p");
+      return;
+    }
+
+    if (event.key === "Backspace") {
+      const selection = window.getSelection();
+      const atStart =
+        selection && selection.isCollapsed && selection.anchorOffset === 0;
+      if (atStart) {
+        event.preventDefault();
+        deleteOrMergeBlock(bIndex, lIndex);
+      }
+    }
+  }
+
   function handleEnter(bIndex, lIndex, event) {
+    const target = event.target;
+
     if (event.shiftKey) {
-      const textarea = event.target;
-      const start = textarea.selectionStart;
-      const end = textarea.selectionEnd;
-      const value = textarea.value;
+      const start = getCursorPosition(target);
+      const end = start;
+      const value = target.isContentEditable
+        ? target.textContent || ""
+        : target.value;
 
-      textarea.value = value.substring(0, start) + "\n" + value.substring(end);
-      blocks.value[bIndex].lines[lIndex].content = textarea.value;
-
-      nextTick(() => {
-        textarea.selectionStart = textarea.selectionEnd = start + 1;
-        adjustHeight(textarea);
-      });
+      const newValue = value.substring(0, start) + "\n" + value.substring(end);
+      if (target.isContentEditable) {
+        target.textContent = newValue;
+        blocks.value[bIndex].lines[lIndex].content = newValue;
+        nextTick(() => {
+          setCursorPosition(target, start + 1);
+          adjustHeight(target);
+        });
+      } else {
+        target.value = newValue;
+        blocks.value[bIndex].lines[lIndex].content = newValue;
+        nextTick(() => {
+          target.selectionStart = target.selectionEnd = start + 1;
+          adjustHeight(target);
+        });
+      }
       return;
     }
 
     const currentLine = blocks.value[bIndex].lines[lIndex];
-    const text = currentLine.content;
-    const cursorPosition = event.target.selectionStart;
+    const text = currentLine.content || "";
+    const cursorPosition = getCursorPosition(target);
 
     const before = text.substring(0, cursorPosition);
     const after = text.substring(cursorPosition);
 
     currentLine.content = before;
-    adjustHeight(event.target);
+    adjustHeight(target);
     let nextType = currentLine.type;
     if (["h1", "h2", "h3", "h4"].includes(nextType)) {
       nextType = "p";
@@ -307,14 +634,19 @@ export function useEditor() {
       const key = `${bIndex}_${lIndex + 1}`;
       const el = lineRefs.value[key];
       if (el) {
-        el.selectionStart = el.selectionEnd = 0;
+        if (el.isContentEditable) {
+          el.innerHTML = after;
+          setCursorPosition(el, 0);
+        } else {
+          el.selectionStart = el.selectionEnd = 0;
+        }
       }
     });
   }
 
   function handleBackspace(bIndex, lIndex, event) {
     const currentLine = blocks.value[bIndex].lines[lIndex];
-    const cursorPosition = event.target.selectionStart;
+    const cursorPosition = getCursorPosition(event.target);
 
     if (cursorPosition === 0 && lIndex > 0) {
       const prevLine = blocks.value[bIndex].lines[lIndex - 1];
@@ -327,8 +659,13 @@ export function useEditor() {
         const key = `${bIndex}_${lIndex - 1}`;
         const el = lineRefs.value[key];
         if (el) {
-          el.focus();
-          el.selectionStart = el.selectionEnd = originalPrevLength;
+          if (el.isContentEditable) {
+            el.innerHTML = prevLine.content;
+            setCursorPosition(el, originalPrevLength);
+          } else {
+            el.focus();
+            el.selectionStart = el.selectionEnd = originalPrevLength;
+          }
           adjustHeight(el);
         }
       });
@@ -411,6 +748,11 @@ export function useEditor() {
     deleteBlock,
     addNewLine,
     deleteLine,
+    onContentFocus,
+    onContentInput,
+    handlePaste,
+    handleEditableKeydown,
+    handleHeadingKeydown,
     handleEnter,
     handleBackspace,
     focusPrev,

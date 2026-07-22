@@ -99,6 +99,30 @@ body::before {
   font-style: italic;
 }
 
+.editor-editable {
+  outline: none;
+  min-height: 1.75rem;
+  line-height: 1.6;
+  word-break: break-word;
+  white-space: pre-wrap;
+  position: relative;
+}
+
+.editor-editable:focus {
+  outline: none;
+}
+
+.editor-editable:empty::before {
+  content: attr(data-placeholder);
+  color: #94a3b8;
+  position: absolute;
+  left: 0;
+  top: 0;
+  pointer-events: none;
+  user-select: none;
+  opacity: 0.5;
+}
+
 /* Leftward sliding dropdown menu animation */
 .dropdown-menu-left-enter-active,
 .dropdown-menu-left-leave-active {
