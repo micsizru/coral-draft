@@ -1,21 +1,31 @@
+/* 💡 RENKLERİ DEĞİŞTİRMEK İSTERSEN SADECE BURADAKİ KODLARI DEĞİŞTİR */
+:root {
+  --coral-bg: #faf8f5; /* Göz yormayan krem/fildişi arka plan */
+  --coral-blue: #0091d2; /* Coral Travel Mavisi */
+  --coral-orange: #ff7900; /* Coral Travel Turuncusu */
+  --coral-dark: #1c2a38; /* Koyu Lacivert Metinler */
+}
+
 *,
 *::before,
 *::after {
   box-sizing: border-box;
 }
+
 body {
   font-family:
     "Inter",
     system-ui,
     -apple-system,
     sans-serif;
-  background: #f8fafc;
-  color: #0f172a;
+  background-color: var(--coral-bg) !important;
+  color: var(--coral-dark);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   margin: 0;
 }
 
+/* En üstteki çizgiye Coral Mavi-Turuncu geçişi */
 body::before {
   content: "";
   position: fixed;
@@ -23,7 +33,7 @@ body::before {
   left: 0;
   right: 0;
   height: 3px;
-  background: linear-gradient(90deg, #6366f1, #8b5cf6, #ec4899);
+  background: linear-gradient(90deg, var(--coral-blue), var(--coral-orange));
   z-index: 9999;
 }
 
@@ -181,9 +191,9 @@ body::before {
 }
 
 .btn-primary {
-  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  background: linear-gradient(135deg, #0091d2, #0077b6);
   color: #fff;
-  box-shadow: 0 2px 8px rgba(99, 102, 241, 0.25);
+  box-shadow: 0 2px 8px rgba(0, 145, 210, 0.25);
 }
 .btn-primary:hover {
   background: linear-gradient(135deg, #4f46e5, #7c3aed);
@@ -210,4 +220,34 @@ body::before {
   background: #f8fafc;
   border-color: #cbd5e1;
   color: #1e293b;
+}
+
+/*Scroll Bar'dan kurtulma kodları Start*/
+
+/* Textarea otomatik yükseklik alırken çirkin scrollbar görünmesini engelle */
+textarea {
+  overflow-y: hidden !important; /* Dikey kaydırma çubuğunu gizle */
+  overflow-x: hidden !important;
+}
+
+.editor-line-h1,
+.editor-line-h2,
+.editor-line-h3,
+.editor-line-h4 {
+  min-height: 2.2rem; /* Başlıklar boşken çöküp scrollbar tetiklemesin */
+}
+
+/*Scroll Bar'dan kurtulma kodları End*/
+
+/* Panelin Yukarıdan Aşağıya Süzülme (Drop-down) Animasyonu */
+.sidebar-slide-enter-active,
+.sidebar-slide-leave-active {
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  transform-origin: top center;
+}
+
+.sidebar-slide-enter-from,
+.sidebar-slide-leave-to {
+  opacity: 0;
+  transform: translateY(-20px) scale(0.96); /* Yukarıdan yumuşakça düşerek gelir */
 }

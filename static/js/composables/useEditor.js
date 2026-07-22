@@ -1,4 +1,5 @@
 import { LINE_TYPES, AUTOSAVE_DELAY } from "../config/editorConfig.js";
+import { translations } from "../config/translations.js";
 import {
   getUniqueId,
   adjustHeight,
@@ -21,6 +22,22 @@ export function useEditor() {
   const { ref, reactive, nextTick, onMounted, watch } = window.Vue;
 
   const sidebarOpen = ref(true);
+
+  /* Language Support Area Starts */
+  const currentLang = ref(localStorage.getItem("coral_lang") || "ru"); // Varsayılan Rusça
+
+  function setLang(lang) {
+    currentLang.value = lang;
+    localStorage.setItem("coral_lang", lang);
+  }
+
+  function t(key) {
+    return (
+      translations[currentLang.value]?.[key] || translations["tr"]?.[key] || key
+    );
+  }
+  /* Language Support Area Ends*/
+
   const currentDocId = ref(null);
   const saving = ref(false);
   const docList = ref([]);
@@ -118,7 +135,7 @@ export function useEditor() {
           })),
         }));
       }
-      showToast("✓ Belge yüklendi");
+      showToast(t("toastLoaded"));
       triggerAllHeights();
     } catch (e) {
       showToast("⚠ Belge yüklenemedi");
@@ -143,7 +160,7 @@ export function useEditor() {
         lines: [{ id: getUniqueId(), type: "p", content: "" }],
       },
     ];
-    showToast("Yeni Taslak");
+    showToast(t("toastNew"));
     nextTick(() => {
       isDocLoading = false;
     });
@@ -187,7 +204,7 @@ export function useEditor() {
       name: newBName,
       lines: [{ id: getUniqueId(), type: "p", content: "" }],
     });
-    showToast("✓ Yeni Blok eklendi");
+    showToast(t("toastBlockAdded"));
     nextTick(() => {
       focusLine(blocks.value.length - 1, 0);
     });
@@ -384,6 +401,9 @@ export function useEditor() {
     saving,
     docList,
     sidebarOpen,
+    currentLang,
+    setLang,
+    t,
     toggleDropdown,
     getDropdownBtnClass: getDropdownBtnClassWrapper,
     setLineType,

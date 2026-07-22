@@ -7,7 +7,7 @@ export function getUniqueId() {
 export function adjustHeight(el) {
   if (!el) return;
   el.style.height = "auto";
-  el.style.height = el.scrollHeight + "px";
+  el.style.height = el.scrollHeight + 2 + "px";
 }
 
 export function getLineClass(type) {

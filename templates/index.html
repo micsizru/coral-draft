@@ -23,6 +23,14 @@
       tailwind.config = {
         theme: {
           extend: {
+            colors: {
+              coral: {
+                bg: "#faf8f5",
+                blue: "#0091d2",
+                orange: "#ff7900",
+                dark: "#1c2a38",
+              },
+            },
             fontFamily: {
               sans: ["Inter", "system-ui", "-apple-system", "sans-serif"],
             },
@@ -71,7 +79,7 @@
               </svg>
             </button>
             <div
-              class="w-9 h-9 bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 rounded-xl flex items-center justify-center shadow-md shadow-indigo-500/20"
+              class="w-9 h-9 bg-gradient-to-br from-[#0091d2] via-[#ff7900] to-[#ffb100] rounded-xl flex items-center justify-center shadow-md shadow-orange-500/20"
             >
               <span class="text-white font-extrabold text-sm tracking-tight"
                 >Coral</span
@@ -84,87 +92,106 @@
               <p
                 class="text-[0.65rem] text-slate-400 font-medium tracking-wide uppercase flex items-center gap-1.5"
               >
-                <span>Blok Editörü</span>
-                <!-- CANLI DURUM GÖSTERGESİ -->
+                <!-- Durum Göstergesi -->
                 <span v-if="saving" class="text-indigo-600 font-bold">
-                  • Kaydediliyor...</span
+                  • {{ t('saving') }}</span
                 >
                 <span
                   v-else-if="currentDocId"
                   class="text-emerald-600 font-bold"
                 >
-                  • Bulutta Kayıtlı</span
+                  • {{ t('savedCloud') }}</span
                 >
               </p>
             </div>
           </div>
 
-          <div class="flex items-center gap-2">
+          <div class="flex items-center gap-2.5">
+            <!-- SABİTLENMİŞ AKSİYON BUTONLARI -->
             <button
-              class="btn btn-outline border-indigo-200 text-indigo-600 hover:bg-indigo-50"
+              class="btn btn-outline border-indigo-200 text-indigo-600 hover:bg-indigo-50 min-w-[130px] justify-center whitespace-nowrap"
               @click="createNewDoc"
             >
-              + Yeni Taslak
+              {{ t('newDraft') }}
             </button>
-            <button class="btn btn-primary" @click="downloadDOCX">
-              DOCX İndir
+
+            <button 
+              class="btn btn-primary min-w-[135px] justify-center whitespace-nowrap" 
+              @click="downloadDOCX"
+            >
+              {{ t('docxDownload') }}
             </button>
-            <button class="btn btn-dark" @click="downloadJSON">
-              JSON İndir
+
+            <button 
+              class="btn btn-dark min-w-[125px] justify-center whitespace-nowrap" 
+              @click="downloadJSON"
+            >
+              {{ t('jsonDownload') }}
             </button>
+
+            <!-- DİKEY AYIRAÇ ÇİZGİSİ -->
+            <div class="h-5 w-[1px] bg-slate-200 mx-1"></div>
+
+            <!-- EN SAĞDAKİ DİL SEÇİCİ ALANI -->
+            <div class="flex items-center bg-slate-100/90 p-1 rounded-xl border border-slate-200/80 text-xs font-bold text-slate-600 shadow-inner">
+              <button @click="setLang('tr')" :class="['px-2.5 py-1 rounded-lg transition-all cursor-pointer select-none', currentLang === 'tr' ? 'bg-white text-indigo-600 shadow-sm font-extrabold' : 'hover:text-slate-900 opacity-70']">TR</button>
+              <button @click="setLang('ru')" :class="['px-2.5 py-1 rounded-lg transition-all cursor-pointer select-none', currentLang === 'ru' ? 'bg-white text-indigo-600 shadow-sm font-extrabold' : 'hover:text-slate-900 opacity-70']">RU</button>
+              <button @click="setLang('en')" :class="['px-2.5 py-1 rounded-lg transition-all cursor-pointer select-none', currentLang === 'en' ? 'bg-white text-indigo-600 shadow-sm font-extrabold' : 'hover:text-slate-900 opacity-70']">EN</button>
+            </div>
           </div>
-        </div>
       </header>
 
       <!-- ═══════════ MAIN CONTENT ═══════════ -->
       <!-- ═══════════ MAIN & SIDEBAR CONTAINER ═══════════ -->
       <div class="flex-1 flex max-w-7xl w-full mx-auto px-4 items-start gap-6">
         <!-- ── SOL TASLAK PANELİ (SIDEBAR) ── -->
-        <aside
-          v-if="sidebarOpen"
-          class="w-64 bg-white border border-slate-200/80 p-4 my-8 rounded-2xl shadow-sm flex flex-col gap-3 shrink-0 sticky top-20 max-h-[calc(100vh-120px)] transition-all"
-        >
-          <div
-            class="flex items-center justify-between border-b border-slate-100 pb-3"
+        <transition name="sidebar-slide">
+          <aside
+            v-if="sidebarOpen"
+            class="fixed xl:absolute left-4 top-20 xl:top-8 z-50 xl:z-20 w-64 bg-white/95 backdrop-blur-md border border-slate-200/80 p-4 rounded-2xl shadow-2xl xl:shadow-sm flex flex-col gap-3 max-h-[calc(100vh-100px)]"
           >
-            <h2
-              class="text-xs font-bold text-slate-400 uppercase tracking-wider"
-            >
-              Taslaklarım
-            </h2>
-            <span class="text-xs text-slate-400 font-medium"
-              >{{ docList.length }} Belge</span
-            >
-          </div>
-
-          <div class="flex-1 overflow-y-auto space-y-1.5 pr-1">
             <div
-              v-for="doc in docList"
-              :key="doc.id"
-              @click="loadDoc(doc.id)"
-              :class="['p-2.5 rounded-xl text-sm cursor-pointer transition flex items-center justify-between group border', 
-                       currentDocId === doc.id ? 'bg-indigo-50/80 text-indigo-700 font-semibold border-indigo-200' : 'text-slate-600 hover:bg-slate-50 border-transparent hover:border-slate-200']"
+              class="flex items-center justify-between border-b border-slate-100 pb-3"
             >
-              <span class="truncate pr-2 text-xs"
-                >📄 {{ doc.title || 'İsimsiz Taslak' }}</span
+              <h2
+                class="text-xs font-bold text-slate-400 uppercase tracking-wider"
               >
-              <button
-                @click.stop="deleteDoc(doc.id)"
-                class="opacity-0 group-hover:opacity-100 text-slate-400 hover:text-red-500 font-bold px-1 transition"
-                title="Taslağı Sil"
+                {{ t('myDrafts') }}
+              </h2>
+              <span class="text-xs text-slate-400 font-medium"
+                >{{ docList.length }} {{ t('documents') }}</span
               >
-                ×
-              </button>
             </div>
 
-            <div
-              v-if="docList.length === 0"
-              class="text-xs text-slate-400 italic text-center py-6"
-            >
-              Henüz kayıtlı taslak yok.
+            <div class="flex-1 overflow-y-auto space-y-1.5 pr-1">
+              <div
+                v-for="doc in docList"
+                :key="doc.id"
+                @click="loadDoc(doc.id)"
+                :class="['p-2.5 rounded-xl text-sm cursor-pointer transition flex items-center justify-between group border', 
+                         currentDocId === doc.id ? 'bg-indigo-50/80 text-indigo-700 font-semibold border-indigo-200' : 'text-slate-600 hover:bg-slate-50 border-transparent hover:border-slate-200']"
+              >
+                <span class="truncate pr-2 text-xs"
+                  >📄 {{ doc.title || 'İsimsiz Taslak' }}</span
+                >
+                <button
+                  @click.stop="deleteDoc(doc.id)"
+                  class="opacity-0 group-hover:opacity-100 text-slate-400 hover:text-red-500 font-bold px-1 transition"
+                  title="Taslağı Sil"
+                >
+                  ×
+                </button>
+              </div>
+
+              <div
+                v-if="docList.length === 0"
+                class="text-xs text-slate-400 italic text-center py-6"
+              >
+                {{ t('noDrafts') }}
+              </div>
             </div>
-          </div>
-        </aside>
+          </aside>
+        </transition>
         <main
           class="max-w-5xl w-full mx-auto px-6 pt-8 pb-20 flex-1 flex flex-col gap-8"
         >
@@ -176,14 +203,14 @@
               <h2
                 class="text-xs font-bold text-slate-400 uppercase tracking-wider"
               >
-                SEO Bilgileri
+                {{ t('seoInfo') }}
               </h2>
             </div>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label
                   class="block text-xs font-bold text-slate-500 uppercase mb-1"
-                  >Sayfa Ana Başlığı (H1)</label
+                  >{{ t('h1Title') }}</label
                 >
                 <input
                   v-model="seo.h1"
@@ -195,7 +222,7 @@
               <div>
                 <label
                   class="block text-xs font-bold text-slate-500 uppercase mb-1"
-                  >Meta Title</label
+                  >{{ t('metaTitle') }}</label
                 >
                 <input
                   v-model="seo.metaTitle"
@@ -207,7 +234,7 @@
               <div>
                 <label
                   class="block text-xs font-bold text-slate-500 uppercase mb-1"
-                  >URL</label
+                  >{{ t('url') }}</label
                 >
                 <input
                   v-model="seo.url"
@@ -219,7 +246,7 @@
               <div>
                 <label
                   class="block text-xs font-bold text-slate-500 uppercase mb-1"
-                  >Meta Description</label
+                  >{{ t('metaDesc') }}</label
                 >
                 <input
                   v-model="seo.metaDescription"
@@ -248,16 +275,20 @@
                     v-model="block.name"
                     type="text"
                     class="bg-transparent text-sm font-bold text-slate-400 uppercase tracking-widest border-b border-transparent hover:border-slate-300 focus:border-indigo-500 outline-none px-1 py-0.5 transition-all"
-                    placeholder="BLOK İSMİ"
+                    :placeholder="t('blockName')"
                   />
                 </div>
 
                 <button
                   v-if="blocks.length > 1"
                   @click="deleteBlock(bIndex)"
-                  class="text-xs text-red-400 hover:text-red-600 font-medium flex items-center gap-1 hover:underline"
+                  class="px-2.5 py-1 rounded-lg text-xs font-semibold text-rose-500 bg-rose-50 hover:bg-rose-100 hover:text-rose-700 border border-rose-100/80 transition-all flex items-center gap-1.5 active:scale-95 cursor-pointer shadow-sm"
                 >
-                  Bloğu Sil
+                  <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+                    <polyline points="3 6 5 6 21 6" />
+                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                  </svg>
+                  {{ t('deleteBlock') }}
                 </button>
               </div>
 
@@ -313,7 +344,7 @@
                       rows="1"
                       class="w-full bg-transparent border-0 outline-none resize-none focus:ring-0 px-0 py-1 m-0 placeholder:text-slate-300 placeholder:italic transition-all duration-200 block"
                       :class="getLineClass(line.type)"
-                      placeholder="Yazmaya başlayın..."
+                      :placeholder="t('placeholderText')"
                       @input="adjustHeight($event.target)"
                     ></textarea>
 
@@ -327,7 +358,7 @@
                         target="_blank"
                         class="text-xs text-blue-600 hover:underline inline-flex items-center gap-1 font-medium"
                       >
-                        Linki Test Et ↗
+                        {{ t('testLink') }}
                       </a>
                     </div>
                   </div>
@@ -337,7 +368,7 @@
                     <button
                       @click="deleteLine(bIndex, lIndex)"
                       class="opacity-0 group-hover:opacity-100 w-7 h-7 rounded-full text-slate-300 hover:text-red-500 hover:bg-red-50 flex items-center justify-center transition-all duration-150"
-                      title="Satırı sil"
+                      :title="t('deleteLine')"
                     >
                       <svg
                         width="14"
@@ -388,7 +419,7 @@
                 <line x1="12" y1="5" x2="12" y2="19" />
                 <line x1="5" y1="12" x2="19" y2="12" />
               </svg>
-              Yeni Blok Ekle
+              {{ t('addBlock') }}
             </button>
           </div>
         </main>

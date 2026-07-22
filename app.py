@@ -2,15 +2,19 @@ import json
 import os
 from pathlib import Path
 import uuid
+import shutil
+from datetime import datetime
 from flask import Flask, jsonify, request, send_from_directory
 
 app = Flask(__name__)
 
-# Taslakların kaydedileceği klasör
+# Taslakların ve silinenlerin kaydedileceği klasörler
 BASE_DIR = Path(__file__).resolve().parent
 STORAGE_DIR = BASE_DIR / "documents"
-os.makedirs(STORAGE_DIR, exist_ok=True)
+DELETED_DIR = STORAGE_DIR / "deleted"
 
+os.makedirs(STORAGE_DIR, exist_ok=True)
+os.makedirs(DELETED_DIR, exist_ok=True)
 
 @app.route("/")
 def index():
@@ -69,15 +73,20 @@ def get_doc(doc_id):
     return jsonify({"error": "Belge bulunamadı"}), 404
 
 
-# 4. Belge Sil
+# 4. Belge Sil (Soft Delete - Arşive Taşı)
 @app.route("/api/doc/<doc_id>", methods=["DELETE"])
 def delete_doc(doc_id):
     filepath = STORAGE_DIR / f"{doc_id}.json"
     if filepath.exists():
-        os.remove(filepath)
-        return jsonify({"status": "success"})
+        # Çakışmayı önlemek için silindiği anın tarih/saatini adına ekliyoruz
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        target_path = DELETED_DIR / f"{doc_id}_{timestamp}.json"
+        
+        # Dosyayı yok etmek yerine 'deleted' klasörüne taşıyoruz
+        shutil.move(str(filepath), str(target_path))
+        return jsonify({"status": "success", "message": "Belge arşive taşındı"})
     return jsonify({"error": "Bulunamadı"}), 404
 
 
 if __name__ == "__main__":
-    app.run(debug=True, port=5213)
+    app.run(debug=True, port=5213)
