@@ -736,10 +736,12 @@ export function useEditor() {
     }
 
     if (event.key === "Backspace") {
-      // Bizim yazdığımız milimetrik harf sayıcı kontrolü
+      const selection = window.getSelection();
+      // Yalnızca ortada seçili metin YOKSA (isCollapsed) ve imleç 0. harfdeyse silme/birleştirme yap
+      const isCollapsed = selection && selection.isCollapsed;
       const cursorPos = getCursorPosition(event.target);
-      // Eğer imleç AÇIKÇA ve GERÇEKTEN satırın 0. harfindeyse sil/birleştir
-      if (cursorPos === 0) {
+
+      if (isCollapsed && cursorPos === 0) {
         event.preventDefault();
         deleteOrMergeBlock(bIndex, lIndex);
       }
