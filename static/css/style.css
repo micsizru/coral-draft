@@ -99,6 +99,30 @@ body::before {
   font-style: italic;
 }
 
+.editor-editable {
+  outline: none;
+  min-height: 1.75rem;
+  line-height: 1.6;
+  word-break: break-word;
+  white-space: pre-wrap;
+  position: relative;
+}
+
+.editor-editable:focus {
+  outline: none;
+}
+
+.editor-editable:empty::before {
+  content: attr(data-placeholder);
+  color: #94a3b8;
+  position: absolute;
+  left: 0;
+  top: 0;
+  pointer-events: none;
+  user-select: none;
+  opacity: 0.5;
+}
+
 /* Leftward sliding dropdown menu animation */
 .dropdown-menu-left-enter-active,
 .dropdown-menu-left-leave-active {
@@ -250,4 +274,75 @@ textarea {
 .sidebar-slide-leave-to {
   opacity: 0;
   transform: translateY(-20px) scale(0.96); /* Yukarıdan yumuşakça düşerek gelir */
+}
+
+/* Block Formatting Toolbar */
+.block-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.35rem 0.65rem;
+  background-color: rgba(248, 250, 252, 0.9);
+  border: 1px solid #e2e8f0;
+  border-radius: 0.75rem;
+  margin-bottom: 1.25rem;
+}
+
+.toolbar-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.3rem 0.6rem;
+  border-radius: 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #475569;
+  background: transparent;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  user-select: none;
+}
+
+.toolbar-btn:hover {
+  background-color: #f1f5f9;
+  color: #0f172a;
+}
+
+.toolbar-btn.active {
+  background-color: #e0e7ff;
+  color: #4338ca;
+  border-color: #c7d2fe;
+}
+
+/* Rich Text Link Styling inside contenteditable */
+.rich-text-editor a {
+  color: #0091d2;
+  text-decoration: underline;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.rich-text-editor a:hover {
+  color: #0077b6;
+}
+
+/* Editör satırlarında beliren anlık çerçeve (border) ve odaklanma halkasını tamamen engelle */
+.editor-editable,
+.editor-editable:focus,
+.editor-editable:focus-visible,
+.editor-editable:active,
+textarea.editor-line-h1,
+textarea.editor-line-h2,
+textarea.editor-line-h3,
+textarea.editor-line-h4,
+textarea:focus,
+textarea:focus-visible {
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+[v-cloak] {
+  display: none !important;
 }
