@@ -273,3 +273,142 @@ coral-draft/
 │   └── index.html              # Основной шаблон интерфейса
 └── documents/                  # Сохраненные JSON-черновики
 ```
+
+# 🪸 Coral Draft
+
+> **Standardization for Content Writers, Automation for Developers.**
+
+`Coral Draft` is a **Structured Content Editor** that transforms free-form documents created by web content writers (copywriters and SEO editors) into a standardized data architecture.
+
+It fundamentally eliminates the problems of "dirty HTML" and "unstructured formatting" commonly produced by Google Docs and similar text editors, improving the writing experience while reducing the development team's content integration and automation costs to virtually zero.
+
+---
+
+## 📐 Problem & Motivation
+
+In traditional content creation workflows, writers typically use Google Docs or similar word processors. While convenient for authors, this introduces significant operational overhead for technical teams:
+
+- **Structural Inconsistency:** Random use of H1, H2, and H3 heading hierarchies disrupts both the website's visual consistency and its SEO structure.
+- **Dirty HTML & Inline Styles:** Copy-pasting content from Google Docs or web pages introduces unnecessary `<div>` elements, `<style>` tags, fonts, colors, and other unwanted markup, often breaking layouts during CMS integration.
+- **Developer Overhead:** Designers and developers must manually inspect, clean, and adapt every article before it can be integrated into the frontend or CMS templates.
+
+---
+
+## 🎯 Vision & Strategic Value
+
+`Coral Draft` transforms content creation from free-form text into a **Modular Block-based AST (Abstract Syntax Tree)** data model.
+
+### 1. Short-Term Benefit (Standardization)
+
+Writers are limited to predefined block types (H1–H4, Paragraph, Image/URL) and approved formatting options (**Bold**, _Italic_, and Links). This completely removes the developer's responsibility of converting raw content into production-ready web content.
+
+### 2. Long-Term Benefit (Automation Potential)
+
+The editor produces a **clean, structured JSON** output. This enables:
+
+- **Headless CMS Integration:** Content can be published directly into databases or CMS platforms with a single click.
+- **CI/CD & Automation Pipelines:** Automatic SEO validation, language analysis, or even fully automated publishing workflows can be triggered without manual intervention.
+
+---
+
+## ✨ Key Features
+
+- **🧱 Modular Block Architecture:** Content is organized into blocks containing structured heading and paragraph lines.
+- **✍️ Clean Rich Text Support:** A custom sanitizer allows only semantic HTML tags (`<b>`, `<i>`, `<a>`), preventing unwanted markup.
+- **💾 Real-Time Cloud Autosave (Autosave Engine):** Debounce- and reactive state-based autosave mechanism minimizes the risk of data loss while writing.
+- **📄 Dual Export System:**
+  - **JSON Export:** Clean AST output designed for web applications, APIs, and CMS integrations.
+  - **DOCX Export:** Microsoft Word-compatible documents with full preservation of rich text formatting using the `docx.js` engine.
+
+---
+
+## 🏗️ Architecture & Technical Design Decisions
+
+The frontend is built with **Vue 3 Composition API**, providing a reactive and modular architecture, while the backend leverages **Python Flask** as a lightweight and high-performance service layer.
+
+```text
++-----------------------------------------------------------------------+
+| CORAL DRAFT                                                           |
++-----------------------------------------------------------------------+
+|                                                                       |
+| [ Content Input ] (Write / Paste Clean Text)                         |
+| │                                                                     |
+| ▼                                                                     |
+| [ Sanitization & DOM Parser ] (Strip , inline CSS, keep semantic)    |
+| │                                                                     |
+| ▼                                                                     |
+| [ Reactive State Manager ] (useEditor.js Composable)                 |
+| │                                                                     |
+| ├───────────────────────────────┐                                      |
+| ▼                             ▼                                      |
+| [ Autosave API / Flask ]       [ Export Engines ]                    |
+| (Local/Cloud Sync JSON)        ├── JSON Engine (Clean AST)            |
+|                               └── DOCX Engine (docx.js Parser)        |
++-----------------------------------------------------------------------+
+```
+
+### Engineering Decisions
+
+1. **Eliminating `contenteditable` Inconsistencies:**  
+   Native browser behaviors such as unexpected `<div>` creation, cursor jumping, and inconsistent editing are fully abstracted through custom `getCursorPosition` and `setCursorPosition` algorithms.
+
+2. **Keyboard Boundary Protection:**  
+   Bulk selections (`Ctrl + A`) preserve the browser's native behavior, while single-caret operations safely merge blocks using `isCollapsed` boundary checks.
+
+3. **Regex-Based URL Normalization:**  
+   Links entered without `http://` or `https://` are automatically normalized, preventing browsers from interpreting them as local file paths.
+
+---
+
+## 📊 Data Flow & JSON Schema
+
+Content created by the writer is stored internally in the following clean and structured format:
+
+```json
+{
+  "name": "Antalya Travel Guide Draft",
+  "meta": {
+    "title": "Antalya Travel Guide 2026",
+    "url": "antalya-gezi-rehberi",
+    "description": "Places to visit and travel routes in Antalya."
+  },
+  "blocks": [
+    {
+      "name": "Introduction Block",
+      "lines": [
+        {
+          "type": "h1",
+          "content": "Antalya Vacation Guide"
+        },
+        {
+          "type": "p",
+          "content": "We've compiled the <b>must-see destinations</b> in Antalya, one of the Mediterranean's most popular holiday destinations. Visit <a href=\"https://coral.ru\">our website</a> for more details."
+        }
+      ]
+    }
+  ]
+}
+```
+
+## 📁 Project Structure
+
+```text
+coral-draft/
+├── app.py                      # Flask API & File Management
+├── requirements.txt            # Python Dependencies
+├── static/
+│   ├── css/
+│   │   └── style.css           # Editor Styling & Typography
+│   └── js/
+│       ├── app.js              # Vue 3 Application Entry Point
+│       ├── composables/
+│       │   └── useEditor.js    # Editor Logic, State & DOM Management
+│       ├── services/
+│       │   ├── apiService.js   # Flask API Integration Layer
+│       │   └── exportService.js# DOCX / JSON Export Engine
+│       └── utils/
+│           └── helpers.js      # Utility Functions & Regex Helpers
+├── templates/
+│   └── index.html              # Main Interface Template
+└── documents/                  # Stored JSON Draft Files
+```
