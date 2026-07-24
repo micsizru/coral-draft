@@ -1,5 +1,3 @@
-Markdown
-
 # 🪸 Coral Draft
 
 > **İçerik Yazarı İçin Standardizasyon, Yazılımcı İçin Otomasyon.**
@@ -56,24 +54,26 @@ Sistemin ürettiği çıktı **temiz ve şematik bir JSON** veri yapısıdır. B
 
 Proje, frontend tarafında reaktif ve modüler bir mimari sunmak için **Vue 3 Composition API**, backend tarafında ise hafif ve hızlı bir servis katmanı için **Python Flask** üzerine kurgulanmıştır.
 
+```text
 +-----------------------------------------------------------------------+
-| CORAL DRAFT |
+| CORAL DRAFT                                                           |
 +-----------------------------------------------------------------------+
-| |
-| [ Content Input ] (Write / Paste Clean Text) |
-| │ |
-| ▼ |
-| [ Sanitization & DOM Parser ] (Strip , inline CSS, keep semantic)|
-| │ |
-| ▼ |
-| [ Reactive State Manager ] (useEditor.js Composable) |
-| │ |
-| ├───────────────────────────────┐ |
-| ▼ ▼ |
-| [ Autosave API / Flask ] [ Export Engines ] |
-| (Local/Cloud Sync JSON) ├── JSON Engine (Clean AST) |
-| └── DOCX Engine (docx.js Parser) |
+|                                                                       |
+| [ Content Input ] (Write / Paste Clean Text)                         |
+| │                                                                     |
+| ▼                                                                     |
+| [ Sanitization & DOM Parser ] (Strip , inline CSS, keep semantic)    |
+| │                                                                     |
+| ▼                                                                     |
+| [ Reactive State Manager ] (useEditor.js Composable)                 |
+| │                                                                     |
+| ├───────────────────────────────┐                                      |
+| ▼                             ▼                                      |
+| [ Autosave API / Flask ]       [ Export Engines ]                    |
+| (Local/Cloud Sync JSON)        ├── JSON Engine (Clean AST)            |
+|                               └── DOCX Engine (docx.js Parser)        |
 +-----------------------------------------------------------------------+
+```
 
 ### Keyfi Kararlar ve Teknik Zırhlandırma
 
@@ -90,7 +90,7 @@ Proje, frontend tarafında reaktif ve modüler bir mimari sunmak için **Vue 3 C
 
 Yazarın girdiği içerik arka planda şu temiz ve şematik yapıda saklanır:
 
-````json
+```json
 {
   "name": "Antalya Gezi Rehberi Taslağı",
   "meta": {
@@ -108,14 +108,17 @@ Yazarın girdiği içerik arka planda şu temiz ve şematik yapıda saklanır:
         },
         {
           "type": "p",
-          "content": "Akdeniz'in en popüler tatil merkezlerinden biri olan Antalya'da <b>mutlaka görülmesi gereken</b> yerleri derledik. Detaylar için <a href=\"[https://coral.ru](https://coral.ru)\">sitemizi</a> ziyaret edin."
+          "content": "Akdeniz'in en popüler tatil merkezlerinden biri olan Antalya'da <b>mutlaka görülmesi gereken</b> yerleri derledik. Detaylar için <a href=\"https://coral.ru\">sitemizi</a> ziyaret edin."
         }
       ]
     }
   ]
 }
+```
+
+## 📁 Proje Yapısı
+
 ```text
-📁 Proje Yapısı
 coral-draft/
 ├── app.py                      # Flask API ve Dosya Yolu Yönetimi
 ├── requirements.txt            # Python Bağımlılıkları
@@ -134,4 +137,4 @@ coral-draft/
 ├── templates/
 │   └── index.html              # Ana Arayüz Şablonu
 └── documents/                  # Saklanan Taslak JSON Verileri
-````
+```
