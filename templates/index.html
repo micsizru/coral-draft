@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="tr">
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -411,6 +411,7 @@
                     >
                       <div
                         contenteditable="true"
+                        spellcheck="false"
                         class="editor-editable rich-text-editor w-full bg-transparent border-0 outline-none resize-none px-0 py-1 m-0 block"
                         :class="getLineClass(line.type)"
                         :data-placeholder="t('startTyping')"
@@ -426,6 +427,7 @@
                     <template v-else>
                       <textarea
                         v-model="line.content"
+                        spellcheck="false"
                         @keydown="handleHeadingKeydown($event, bIndex, lIndex, line)"
                         @keydown.up.prevent="focusPrev(bIndex, lIndex)"
                         @keydown.down.prevent="focusNext(bIndex, lIndex)"

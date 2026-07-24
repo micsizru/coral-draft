@@ -29,6 +29,7 @@ export function useEditor() {
   function setLang(lang) {
     currentLang.value = lang;
     localStorage.setItem("coral_lang", lang);
+    document.documentElement.lang = lang;
   }
 
   function t(key) {
@@ -889,6 +890,7 @@ export function useEditor() {
   const selectionHandler = () => updateActiveFormats();
 
   onMounted(() => {
+    document.documentElement.lang = currentLang.value;
     triggerAllHeights();
     fetchDocList();
     document.addEventListener("click", () => {
