@@ -295,6 +295,10 @@ export async function downloadDOCX(seo, blocks, showToast) {
             break;
 
           case "image_link":
+            const formattedImgUrl = /^https?:\/\//i.test(item.content.trim())
+              ? item.content.trim()
+              : "https://" + item.content.trim();
+
             children.push(
               new docx.Paragraph({
                 children: [
@@ -307,7 +311,7 @@ export async function downloadDOCX(seo, blocks, showToast) {
                         font: "Calibri",
                       }),
                     ],
-                    link: item.content,
+                    link: formattedImgUrl,
                   }),
                 ],
                 spacing: { after: 80 },

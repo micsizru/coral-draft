@@ -5,6 +5,7 @@ import {
   adjustHeight,
   getLineClass,
   getDropdownBtnClass,
+  formatUrl,
 } from "../utils/helpers.js";
 import {
   fetchDocListApi,
@@ -951,5 +952,6 @@ export function useEditor() {
     closeLinkModal,
     applyLink,
     clearFormat,
+    formatUrl,
   };
 }

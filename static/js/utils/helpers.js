@@ -24,3 +24,13 @@ export function getDropdownBtnClass(type, types) {
     ? found.btnClass
     : "bg-slate-100 text-slate-700 border-slate-300";
 }
+
+export function formatUrl(url) {
+  if (!url) return "";
+  const trimmed = url.trim();
+  if (!trimmed) return "";
+  if (/^https?:\/\//i.test(trimmed)) {
+    return trimmed;
+  }
+  return "https://" + trimmed;
+}
