@@ -90,7 +90,7 @@ Proje, frontend tarafında reaktif ve modüler bir mimari sunmak için **Vue 3 C
 
 Yazarın girdiği içerik arka planda şu temiz ve şematik yapıda saklanır:
 
-```json
+````json
 {
   "name": "Antalya Gezi Rehberi Taslağı",
   "meta": {
@@ -114,6 +114,7 @@ Yazarın girdiği içerik arka planda şu temiz ve şematik yapıda saklanır:
     }
   ]
 }
+```text
 📁 Proje Yapısı
 coral-draft/
 ├── app.py                      # Flask API ve Dosya Yolu Yönetimi
@@ -133,4 +134,4 @@ coral-draft/
 ├── templates/
 │   └── index.html              # Ana Arayüz Şablonu
 └── documents/                  # Saklanan Taslak JSON Verileri
-```
+````
