@@ -43,10 +43,6 @@ Sistemin ürettiği çıktı **temiz ve şematik bir JSON** veri yapısıdır. B
 - **📄 Çifte Dışa Aktarım (Dual Export):**
   - **JSON Export:** Web uygulamaları, API'ler ve CMS entegrasyonları için yapısını koruyan temiz AST çıktısı.
   - **DOCX Export:** Word uyumlu, zengin metin stillerini (`docx.js` motoru ile) birebir koruyan doküman çıktısı.
-- **⌨️ Akıllı Klavye ve İmleç Deneyimi:**
-  - `Backspace` ile satırları üst satırın **son karakterine** akıllı birleştirme.
-  - İç içe etiketlerde dahi kusursuz çalışan **milimetrik caret (imleç) konumlandırması**.
-  - Zengin metin araç çubuğunda canlı durum (Active State) takibi ve `Ctrl + B`, `Ctrl + I`, `Ctrl + K` kısayolları.
 
 ---
 
@@ -184,10 +180,6 @@ coral-draft/
 - **📄 Двойной экспорт (Dual Export):**
   - **Экспорт в JSON:** Чистая AST-структура для веб-приложений, API и интеграции с CMS.
   - **Экспорт в DOCX:** Документ Microsoft Word с полным сохранением форматирования благодаря движку `docx.js`.
-- **⌨️ Продвинутая работа с клавиатурой и курсором:**
-  - Интеллектуальное объединение строк клавишей `Backspace` с переходом курсора в конец предыдущей строки.
-  - Точное позиционирование курсора (caret), корректно работающее даже во вложенных HTML-тегах.
-  - Отслеживание активного состояния панели форматирования и поддержка горячих клавиш `Ctrl + B`, `Ctrl + I`, `Ctrl + K`.
 
 ---
 
